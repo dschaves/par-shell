@@ -1,0 +1,11 @@
+	
+
+	if (argv[] == NULL) { /*Nao passou argumentos*/
+		int pid;
+		pid = fork();
+	
+		if (pid == 0) { /*Processo filho*/
+			printf("O filho esteve aqui");
+			void exit(0);
+		}
+	}
