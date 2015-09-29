@@ -1,11 +1,10 @@
-
 #include <stdio.h>
 #include <string.h>
 
 #include "par-run.h"
+#include "divide_input.h"
 
 #define MAX_INPUT_SIZE 2048
-#define MAX_ARGC 5
 
 int main(int argc, char* argc[])
 {
@@ -14,6 +13,7 @@ int main(int argc, char* argc[])
 		char** command_plus_argv;
 		char* command;
 		char** argv_child;
+		int numchildren;
 
 		putchar('$'); putchar(' ');
 	
@@ -25,7 +25,12 @@ int main(int argc, char* argc[])
 		argv_child = &command_plus_argv[1];
 
 		if (!strcmp(command, "exit"))
+		{
+			while (numchildren < 0)
+				wait(NULL), numchildren--; 
+
 			break;
+		}
 	
 		else
 			par_run(command, argv_child);
@@ -34,3 +39,4 @@ int main(int argc, char* argc[])
 
 	return EXIT_SUCCESS;
 }
+	
