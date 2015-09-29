@@ -1,6 +1,4 @@
-	
-
-	if (argv[] == NULL) { /*Nao passou argumentos*/
+	if (argv == NULL) { /*Nao passou argumentos*/
 		int pid;
 		pid = fork();
 	
