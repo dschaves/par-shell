@@ -1,1 +1,1 @@
-void par_run(char command[], char* argv[]);
+void par_run(char* argv_child[]);

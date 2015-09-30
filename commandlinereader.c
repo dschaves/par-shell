@@ -12,8 +12,8 @@ int commandlinereader(char input[], char* tokens[], int argc_max)
         token = strtok(input, delimiters); 		/* este token e o comando */
 
         for (numtokens = 0; numtokens <= argc_max && token != NULL ; numtokens++)
-	    /* Preencher o vector tokens com todos os tokens encontrados, ate 
-         * ultrapassar o tamanho do vector ou chegar a um NULL.    
+	    /* Preencher o vector tokens com todos os tokens encontrados, 
+         * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
 	     * etc
 	     */	
         {

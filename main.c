@@ -6,47 +6,44 @@
 #include "par_run.h"
 #include "commandlinereader.h"
 
-#define MAX_INPUT_SIZE 2048
+#define MAX_INPUT_SIZE 1024
 #define MAX_ARGC 7
 
 int main(int argc, char* argv[])
 {
 	
-        char input[MAX_INPUT_SIZE];
-		char* command_plus_argv[MAX_ARGC+1];
-		char* command;
-		char** argv_child;
-		int numchildren;
+    char input[MAX_INPUT_SIZE];
+	char* argv_child[MAX_ARGC+2];
+    int numchildren = 0;
 
     for (;;)
 	{	
-        memset(command_plus_argv, 0,MAX_ARGC+1);
+        
+        memset(input, '\0', sizeof(input));
+        memset(argv_child, '\0', sizeof(argv_child));
    
 		putchar('$'); putchar(' ');
 	
-		fgets(input, MAX_INPUT_SIZE, stdin);
+		fgets(input, (int) sizeof(input), stdin);
 	
-		commandlinereader(input, command_plus_argv, MAX_ARGC);
-		
-		command = command_plus_argv[0];
-		argv_child = &command_plus_argv[1];
+		commandlinereader(input, argv_child, MAX_ARGC);
 
-        if (command == NULL)
+        if (argv_child[0] == NULL)
             continue;
 
-		if (!strcmp(command, "exit"))
-		{
-			while (numchildren < 0)
-				wait(NULL), numchildren--; 
+	    if (!strcmp(argv_child[0], "exit"))
+	    {
+		    while (numchildren > 0)
+			    wait(NULL), numchildren--;
 
-			break;
-		}
-	
-		else
-			par_run(command, argv_child);
-			putchar('\n');
-	}
+		    break;
+	    }   
 
-	return EXIT_SUCCESS;
+	    else if (numchildren < 10) //prevent forkbombing
+		    par_run(argv_child), numchildren++;
+
+    }
+
+    return EXIT_SUCCESS;
 }
-	
+
