@@ -17,12 +17,14 @@ int commandlinereader(char input[], char* tokens[], int argc_max)
 	     * etc
 	     */	
         {
-                tokens[numtokens] = token;
+                tokens[numtokens] = token;  
                 token = strtok(NULL, delimiters);
         }
 
         if (token != NULL) // se houver demasiados argumentos 
-            return printf("Too many arguments given. Maximum arguments allowed is %d.\n", argc_max), -1;
+            return printf("Too many arguments: maximum is %d", argc_max), -1;
 
         return numtokens;
 }
+
+

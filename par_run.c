@@ -8,16 +8,15 @@ void par_run(char* argv_child[])
 
     pid_t pid = fork();
 	
-	if (pid == 0) /* is child */
+	if (pid == 0) // is child
 	{	
         execv(argv_child[0], argv_child);
-        // next instruction should never be reached
-        perror("EXEC FAILED");
+
+        // next instruction will not be reached if exec is successful
+        perror("par-shell: exec failed");
         exit(1);
     }
-/*
-    int i;
-    char* string;
-    for (i = 0; (string = argv[i]); i++) puts(string); */
-
+    
+    else return;
 }
+

@@ -12,3 +12,6 @@ commandlinereader.o: commandlinereader.c commandlinereader.h
 par_run.o: par_run.c commandlinereader.h par_run.h
 	gcc -Wall -g -c par_run.c
 
+clean:
+	rm -i *.o
+
