@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include "par_run.h"
+
 void par_run(char command[], char* argv[])
 {
 	pid_t pid = fork();

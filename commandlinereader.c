@@ -1,29 +1,28 @@
-#define ARGC_MAX 7
+#include <string.h> 
+#include <stdio.h>
+#include "commandlinereader.h"
 
-char** commandlinereader(char input[], char* tokens[], int argc_max)
-{
-        char* tokens[ARGC_MAX+1];				/* +1 para o comando */
-        char* token;						/* cada token encontrado */
-        const char delimiters[] = " \t\n";			/* caracteres que acabam strtok */
-        int num_tokens;							/* indice do array */
+int commandlinereader(char input[], char* tokens[], int argc_max)
+{				
 
-        token = strtok(input, delimiters); 			/* este token e o comando */
+        char* token;						    /* cada token encontrado */
+        const char delimiters[] = " \t\n";		/* caracteres que acabam strtok */
+        int numtokens;							/* indice do array */
 
-        for (i = 0 ; i <= ARGC_MAX && token != NULL ; i++)
-	/* Preencher o vector tokens com todos os tokens encontrados, ate ultrapassar o tamanho do vector ou chegar a um NULL.
-	* etc
-	*/	
+        token = strtok(input, delimiters); 		/* este token e o comando */
+
+        for (numtokens = 0; numtokens <= argc_max && token != NULL ; numtokens++)
+	    /* Preencher o vector tokens com todos os tokens encontrados, ate 
+         * ultrapassar o tamanho do vector ou chegar a um NULL.    
+	     * etc
+	     */	
         {
-                tokens[i] = token;
+                tokens[numtokens] = token;
                 token = strtok(NULL, delimiters);
         }
 
-        if (tokens[i] != NULL)
-        {
-		free(tokens);		
-		printf("Too many arguments given. Maximum arguments allowed is %d.\n", ARGC_MAX)
-		return NULL;
-	}
+        if (token != NULL) // se houver demasiados argumentos 
+            return printf("Too many arguments given. Maximum arguments allowed is %d.\n", argc_max), -1;
 
-        return i;
+        return numtokens;
 }
