@@ -10,7 +10,12 @@ void par_run(char* argv_child[])
 	
 	if (pid == 0) // is child
 	{	
-        execv(argv_child[0], argv_child); //arg 1: command; arg2: name and arguments
+        /* we first try executing the command as a directory. If that does not work,
+		 * execute as a command in PATH.
+		 */
+
+		execv(argv_child[0], argv_child); //arg 1: command; arg2: name and arguments
+		execvp(argv_child[0], argv_child);
 
         // next instruction will not be reached if exec is successful
         perror("par-shell: exec failed");
@@ -19,4 +24,3 @@ void par_run(char* argv_child[])
     
     else return; //is parent
 }
-

@@ -6,7 +6,7 @@ int commandlinereader(char input[], char* tokens[], int argc_max)
 {				
  	        
         char* token;						    /* cada token encontrado */
-        const char delimiters[] = " \t\n";		/* caracteres que acabam strtok */
+        const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
         int numtokens = 0;						/* indice do array */
 
         token = strtok(input, delimiters); 		/* este token e o comando */

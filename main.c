@@ -11,7 +11,9 @@
 int main(int argc, char* argv[])
 {
 	
-    char* input = NULL; // for use in getline
+	int argc_child;    
+
+	char* input = NULL; // for use in getline
 
     size_t input_size = 0;
 
@@ -20,35 +22,41 @@ int main(int argc, char* argv[])
     int commands_given = 0;
 
     for (;;)
+
 	{
         
         printf("        <<[%d] PAR-SHELL NOW ACCEPTING INPUT>>\n", commands_given);	
 
         getline(&input, &input_size, stdin);   
 
-        int argc_child = commandlinereader(input, argv_child, MAX_ARGC);
+        argc_child = commandlinereader(input, argv_child, MAX_ARGC);
 
-        if (argv_child[0] == NULL)
+
+        if (argv_child[0] == NULL) //nothing entered
         {
                puts("(got nothing)");         
                continue;
         }
 
-        else if (argc_child == -1)
+
+        else if (argc_child == -1) //too many arguments
         {
             printf("Too many arguments. Maximum is %d.\n", MAX_ARGC);            
             continue;
         }
 
-	    else if (!strcmp(argv_child[0], "exit"))
+
+	    else if (!strcmp(argv_child[0], "exit")) // user enters "exit"
 	    {
             while (errno != ECHILD)
                 wait(NULL);
             break;
 	    }   
 
-        else
-		    par_run(argv_child), ++commands_given;
+
+        else	//user enters anything
+			par_run(argv_child), ++commands_given;
+
     }
 
     return 0;
