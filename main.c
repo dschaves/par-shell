@@ -10,8 +10,9 @@
 
 int main(int argc, char* argv[])
 {
-	
-	int argc_child;    
+	int processes_num = 0;	
+	int argc_child;
+    
 
 	char* input = NULL; // for use in getline
 
@@ -41,22 +42,32 @@ int main(int argc, char* argv[])
 
         else if (argc_child == -1) //too many arguments
         {
-            printf("Too many arguments. Maximum is %d.\n", MAX_ARGC);            
+            printf("Too many arguments. Maximum is %d.\n", MAX_ARGC-2);            
             continue;
         }
 
 
 	    else if (!strcmp(argv_child[0], "exit")) // user enters "exit"
 	    {
-            while (errno != ECHILD)
-                wait(NULL);
+		int a = 0;
+		int array[processes_num];
+		    while (a < processes_num){
+		        array[a++] = wait(NULL);
+		    }
+		a = 0;
+		while(a < processes_num){
+			printf("%d\n", array[a++]);
+		}
             break;
 	    }   
 
 
-        else	//user enters anything
-			par_run(argv_child), ++commands_given;
+        else{	//user enters anything
+		pid_t pid = par_run(argv_child);
+		++commands_given;
+		if (pid != -1) ++processes_num; 
 
+	}
     }
 
     return 0;
