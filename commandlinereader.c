@@ -1,27 +1,28 @@
-char** divide_linha(char input[], int argc_max)
-{
-        char** tokens = malloc(sizeof(char)*(argc_max+1));	/* +1 para o comando */
-        char* token;						/* cada token encontrado */
-        const char delimiters[] = " \t\n";			/* caracteres que acabam strtok */
-        int i;							/* indice do array */
+#include <string.h> 
+#include <stdio.h>
+#include "commandlinereader.h"
 
-        token = strtok(input, delimiters); 			/* este token e o comando */
+int commandlinereader(char input[], char* tokens[], int argc_max)
+{				
+ 	        
+        char* token;						    /* cada token encontrado */
+        const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
+        int numtokens = 0;						/* indice do array */
 
-        for (i = 0 ; i <= argc_max && token != NULL ; i++)
-	/* Preencher o vector tokens com todos os tokens encontrados, ate ultrapassar o tamanho do vector ou chegar a um NULL.
-	* etc
-	*/	
-        {
-                tokens[i] = token;
-                token = strtok(NULL, delimiters);
-        }
+        token = strtok(input, delimiters); 		/* este token e o comando */
 
-        if (tokens[i] != NULL)
-        {
-		free(tokens);		
-		puts("Too many arguments given.")
-		return NULL;
-	}
+        //for (numtokens = 0; numtokens <= argc_max && token != NULL ; numtokens++)
+	    /* Preencher o vector tokens com todos os tokens encontrados, 
+         * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
+	     * etc
+	     */
+        while ((tokens[numtokens++] = token) && numtokens < argc_max+2) 
+            token = strtok(NULL, delimiters);
 
-        return tokens;
+        if (token != NULL) // se houver demasiados argumentos 
+            return -1;
+
+        return numtokens;
 }
+
+

@@ -1,36 +1,64 @@
-
 #include <stdio.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <errno.h>
 
-#include "par-run.h"
+#include "par_run.h"
+#include "commandlinereader.h"
 
-#define MAX_INPUT_SIZE 2048
-#define MAX_ARGC 5
+#define MAX_ARGC 7
 
-int main(int argc, char* argc[])
+int main(int argc, char* argv[])
 {
-	for (;;)
-	{	char input[MAX_INPUT_SIZE];
-		char** command_plus_argv;
-		char* command;
-		char** argv_child;
-
-		putchar('$'); putchar(' ');
 	
-		fgets(input, MAX_INPUT_SIZE, stdin);
-	
-		command_plus_argv = divide_input(input, MAX_ARGC);
-		
-		command = command_plus_argv[0];
-		argv_child = &command_plus_argv[1];
+	int argc_child;    
 
-		if (!strcmp(command, "exit"))
-			break;
-	
-		else
-			par_run(command, argv_child);
-			putchar('\n');
-	}
+	char* input = NULL; // for use in getline
 
-	return EXIT_SUCCESS;
+    size_t input_size = 0;
+
+    char* argv_child[MAX_ARGC+2];
+
+    int commands_given = 0;
+
+    for (;;)
+
+	{
+        
+        printf("        <<[%d] PAR-SHELL NOW ACCEPTING INPUT>>\n", commands_given);	
+
+        getline(&input, &input_size, stdin);   
+
+        argc_child = commandlinereader(input, argv_child, MAX_ARGC);
+
+
+        if (argv_child[0] == NULL) //nothing entered
+        {
+               puts("(got nothing)");         
+               continue;
+        }
+
+
+        else if (argc_child == -1) //too many arguments
+        {
+            printf("Too many arguments. Maximum is %d.\n", MAX_ARGC);            
+            continue;
+        }
+
+
+	    else if (!strcmp(argv_child[0], "exit")) // user enters "exit"
+	    {
+            while (errno != ECHILD)
+                wait(NULL);
+            break;
+	    }   
+
+
+        else	//user enters anything
+			par_run(argv_child), ++commands_given;
+
+    }
+
+    return 0;
 }
+

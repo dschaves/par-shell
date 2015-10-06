@@ -1,1 +1,1 @@
-char** commandlinereader(char input[], int argc_max);
+int commandlinereader(char input[], char* tokens[], int argc_max);
