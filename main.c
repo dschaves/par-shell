@@ -5,25 +5,25 @@
 #include "commandlinereader.h"
 #include "par_run.h"
 
-#define MAX_ARG 7
+#define INPUT_SIZE 7
 
 int main(int argc, char* argv[]) {
 
 	int num_children = 0, status;
-	char* argVector[MAX_ARG]; 
+	char* argVector[INPUT_SIZE]; 
 
-	puts("<< PAR-SHELL READY >>");
+	puts("<< PAR-SHELL READY >>"); 
 
 	for(;;) {
 
-		int numtokens = readLineArguments(argVector, MAX_ARG);
+		int numtokens = readLineArguments(argVector, INPUT_SIZE);
 
-		if (numtokens == -1) {
+		if (numtokens == -1) { // attempts again if there's an error
 			perror("par-shell: readLineArguments failed");
-			continue; // salta para a proxima interacao se houver erro
+			continue; 
 		}
 
-		else if (numtokens == 0) {
+		else if (numtokens == 0) { //nothing input
 			puts("(Got nothing)");
 			continue;
 		}
@@ -38,14 +38,14 @@ int main(int argc, char* argv[]) {
 				if ((datav_child[i][0] = wait(&status)) == -1) // Wait for all processes. If wait fails, break.
 				{
 					perror("par-shell: wait failed");
-					num_children--;
-					continue;
+					num_children = i;
+					break;
 				}
 				
 				datav_child[i][1] = status;
 			}
 
-			for (i = 0; i < num_children; i++)
+			for (i = 0; i < num_children; i++) // prints all pids and return values of children
 				printf("Process %d finished with status %d.\n", datav_child[i][0], datav_child[i][1]);
 
 			break;
