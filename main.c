@@ -5,7 +5,7 @@
 #include "commandlinereader.h"
 #include "par_run.h"
 
-#define MAX_ARG 10
+#define MAX_ARG 7
 
 int main(int argc, char* argv[]) {
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 				{
 					perror("par-shell: wait failed");
 					num_children--;
-					break;
+					continue;
 				}
 				
 				datav_child[i][1] = status;
