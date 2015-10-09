@@ -1,42 +1,58 @@
 #include <stdio.h>
 #include <string.h>
-#include "commandlinereader.h"
-#include "par_run.h"
 #include <sys/wait.h>
 
-#define MAX_ARG 7
+#include "commandlinereader.h"
+#include "par_run.h"
 
-int main(int argc, char* argv[]){
-	int num_child = 0, status;
+#define MAX_ARG 10
+
+int main(int argc, char* argv[]) {
+
+	int num_children = 0, status;
 	char* argVector[MAX_ARG]; 
 
-	for(;;){
+	puts("<< PAR-SHELL READY >>");
+
+	for(;;) {
+
 		int numtokens = readLineArguments(argVector, MAX_ARG);
 
-		if (numtokens == -1) continue; // salta para a proxima interacao se houver erro
-		else if (numtokens == 0){
+		if (numtokens == -1) {
+			perror("par-shell: readLineArguments failed");
+			continue; // salta para a proxima interacao se houver erro
+		}
+
+		else if (numtokens == 0) {
 			puts("(Got nothing)");
 			continue;
 		}
-		else if(numtokens > MAX_ARG){
-			printf("Too many arguments. Maximum is %d.\n", MAX_ARG-1);
-			continue;
-		}
-		else if (!strcmp(argVector[0], "exit")){
+
+		else if (!strcmp(argVector[0], "exit")) {
+
 			int i;
-			int datav_child[num_child][2]; // vector to save pid and status of each child terminated
-			for(i = 0; i < num_child; i++){
-				datav_child[i][0] = wait(&status);
+			int datav_child[num_children][2]; // vector to save pid and status of each child terminated
+
+			for (i = 0; i < num_children ; i++) {
+
+				if ((datav_child[i][0] = wait(&status)) == -1) // Wait for all processes. If wait fails, break.
+				{
+					perror("par-shell: wait failed");
+					num_children--;
+					break;
+				}
+				
 				datav_child[i][1] = status;
 			}
-			for(i = 0; i < num_child; i++){
+
+			for (i = 0; i < num_children; i++)
 				printf("Process %d finished with status %d.\n", datav_child[i][0], datav_child[i][1]);
-			}
-			return 0;
+
+			break;
 		}
-		else {
-			if(par_run(argVector) != -1) num_child++;
-		}
+
+		else if (par_run(argVector) != -1) num_children++;
 	}
+
 	return 0;	
 }

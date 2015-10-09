@@ -4,16 +4,19 @@
 #include "par_run.h"
 
 
-int par_run(char **argVector){
+int par_run(char* argVector[]) {
+
 	int pid = fork();
-	if (pid == -1){
-		perror("par-shell: unable to fork");
-		exit(EXIT_FAILURE);			
-	}
-	if (pid == 0){
+
+	if (pid == -1)  //parent. if child isn't created
+		perror("par-shell: unable to fork");		
+
+	else if (pid == 0) { // child
 		execv(argVector[0], argVector);
+		// next line shouldn't be reached
 		perror("par-shell: exec failed");
-    	exit(-1);
+		exit(1);
 	}
-	return pid;
+
+	return pid; // parent
 }
