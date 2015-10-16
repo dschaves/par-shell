@@ -1,58 +1,58 @@
 #include <stdio.h>
 #include <string.h>
-#include <sys/wait.h>
+#include <pthread.h>
 
 #include "commandlinereader.h"
 #include "par_run.h"
+#include "task_monitor.h"
 
 #define INPUT_SIZE 7
+#define MAX_CHILDREN 8192
 
-int main(int argc, char* argv[]) {
+int exit_called;
+int children_count;
 
-	int num_children = 0, status;
-	char* argVector[INPUT_SIZE]; 
+int main(int argc, char* argv[]) 
+{
+
+	char* argv_child[INPUT_SIZE];
+
+	int datav_children[MAX_CHILDREN][3];	
+
+	pthread_t monitor;
+
+	pthread_create(&monitor, NULL, task_monitor, datav_children);
 
 	puts("<< PAR-SHELL READY >>"); 
 
-	for(;;) {
+	for(;;) // breaks upon "exit" input
+	{
+	
 
-		int numtokens = readLineArguments(argVector, INPUT_SIZE);
+		int numtokens = readLineArguments(argv_child, INPUT_SIZE);
 
 		if (numtokens == -1) { // attempts again if there's an error
 			perror("par-shell: readLineArguments failed");
 			continue; 
 		}
 
-		else if (numtokens == 0) { //nothing input
-			puts("(Got nothing)");
+		else if (numtokens == 0) //nothing input
 			continue;
-		}
 
-		else if (!strcmp(argVector[0], "exit")) {
+		else if (!strcmp(argv_child[0], "exit")) 
+		{
 
+			exit_called = 1;
+			pthread_join(monitor, NULL);
 			int i;
-			int datav_child[num_children][2]; // vector to save pid and status of each child terminated
-
-			for (i = 0; i < num_children ; i++) {
-
-				if ((datav_child[i][0] = wait(&status)) == -1) // Wait for all processes. If wait fails, break.
-				{
-					perror("par-shell: wait failed");
-					num_children = i;
-					break;
-				}
-				
-				datav_child[i][1] = status;
-			}
-
-			for (i = 0; i < num_children; i++) // prints all pids and return values of children
-				printf("Process %d finished with status %d.\n", datav_child[i][0], datav_child[i][1]);
-
+			for (i = 0; i < children_count; i++) // prints all pids and return values of children
+				printf("Process %d finished with status %d.\n", datav_children[i][0], datav_children[i][1]);
 			break;
 		}
 
-		else if (par_run(argVector) != -1) num_children++;
+		else if (par_run(argv_child) != -1) children_count += 1;
 	}
 
 	return 0;	
 }
+
