@@ -1,11 +1,11 @@
-#include <time.h>
-#include <stdio.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include <time.h> // time
+#include <stdio.h> // perror
+#include <sys/wait.h> // wait
+#include <unistd.h> // sleep 
+#include <pthread.h> // mutex
 
 #include "task_monitor.h"
 #include "main.h"
-#pragma GCC diagnostic ignored "-Wformat="
 
 void* task_monitor(void* _main_status)
 {
@@ -18,19 +18,21 @@ void* task_monitor(void* _main_status)
 
 	time_t *children_time_arr;
 
-
 	struct main_status* main_status =  _main_status;
+
+	pthread_mutex_t* main_mutex = main_status->mutex;
 
 	for(;;)
 	{
-		
+		pthread_mutex_lock(main_mutex);
+
 		exit_called = main_status->exit_called;	
-	
 		children_count = main_status->children_count;
 		children_pid_arr = main_status->children_pid_arr;
 		children_status_arr = main_status->children_status_arr;
 		children_time_arr = main_status->children_time_arr;
 
+		pthread_mutex_unlock(main_mutex);
 
 		if (children_count > waited_children) 
 		{
@@ -63,10 +65,14 @@ void* task_monitor(void* _main_status)
 				perror("par-shell: [ERROR] couldn't get finish time for child");
 				finish_time = -1;		
 			}
+
+			pthread_mutex_lock(main_mutex);
 			 
 			children_pid_arr[waited_children] = pid;
 			children_status_arr[waited_children] = WEXITSTATUS(status); 
 			children_time_arr[waited_children] = finish_time;
+
+			pthread_mutex_unlock(main_mutex);
 
 			waited_children += 1;
 
@@ -83,4 +89,3 @@ void* task_monitor(void* _main_status)
 	success: return NULL; //FIXME: este return nao faz sentido
 	failure: return NULL; //FIXME: ditto
 }
-
