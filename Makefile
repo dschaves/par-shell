@@ -1,7 +1,7 @@
 # Makefile
 
 par-shell: commandlinereader.o par_run.o main.o task_monitor.o
-	gcc -pthread -o par-shell commandlinereader.o par_run.o main.o task_monitor.o
+	gcc -pthread -g -o par-shell commandlinereader.o par_run.o main.o task_monitor.o
 
 main.o: main.c main.h commandlinereader.h par_run.h task_monitor.h
 	gcc -pthread -Wall -g -c main.c

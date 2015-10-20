@@ -6,24 +6,31 @@
 #include "task_monitor.h"
 #include "main.h"
 
-void* task_monitor(void* _datav_children)
+void* task_monitor(void* _main_status)
 {
 
-	int pid;
+	time_t start_time, finish_time;
 
-	int start_time;
+	int pid, status, children_count, exit_called, waited_children = 0;
 
-	int finish_time;
+	int* children_pid_arr, *children_status_arr;
 
-	int status;
+	time_t *children_time_arr;
 
-	int waited_children = 0;
 
-	int** datav_children = (int**) _datav_children;
+	struct main_status* main_status =  _main_status;
 
 	for(;;)
 	{
 		
+		exit_called = main_status->exit_called;	
+	
+		children_count = main_status->children_count;
+		children_pid_arr = main_status->children_pid_arr;
+		children_status_arr = main_status->children_status_arr;
+		children_time_arr = main_status->children_time_arr;
+
+
 		if (children_count > waited_children) 
 		{
 
@@ -56,17 +63,17 @@ void* task_monitor(void* _datav_children)
 				finish_time = -1;		
 			}
 			 
-			datav_children[waited_children][0] = pid;
-			datav_children[waited_children][1] = status; 
-			datav_children[waited_children][2] = finish_time;
+			children_pid_arr[waited_children] = pid;
+			children_status_arr[waited_children] = status; 
+			children_time_arr[waited_children] = finish_time;
 
 			waited_children += 1;
 
-			if (exit_called == 1 && children_count == waited_children)
-			// then we're done here
-				goto success;
 
 		}
+
+		else if (exit_called == 1)
+				goto success;
 
 		else sleep(1); //sleep if no processes are waiting to be waited.
 
