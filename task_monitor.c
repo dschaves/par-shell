@@ -5,6 +5,7 @@
 
 #include "task_monitor.h"
 #include "main.h"
+#pragma GCC diagnostic ignored "-Wformat="
 
 void* task_monitor(void* _main_status)
 {
@@ -64,7 +65,7 @@ void* task_monitor(void* _main_status)
 			}
 			 
 			children_pid_arr[waited_children] = pid;
-			children_status_arr[waited_children] = status; 
+			children_status_arr[waited_children] = WEXITSTATUS(status); 
 			children_time_arr[waited_children] = finish_time;
 
 			waited_children += 1;
