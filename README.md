@@ -1,6 +1,6 @@
-# 16/10: NAO FUNCIONA! SEGMENTATION FAULT APOS QUALQUER COMANDO!
+# 21/10. Já funciona. Woot.
 
-Esperemos que o Rafael e o Daniel arranjem este pormenor. ^_^
+Próximo passo é mudar de vectores para listas.
 
 # SO1
 Sistemas Operativos, entrega 2!
