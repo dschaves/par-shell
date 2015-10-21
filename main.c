@@ -5,28 +5,28 @@
 #include "commandlinereader.h"
 #include "par_run.h"
 #include "task_monitor.h"
+#include "list.h"
 #include "main.h"
 
-//int a;
+
 
 #define INPUT_SIZE 7
 
+int children_count = 0;
+int exit_called = 0;
+list_t* children_list;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int main(int argc, char* argv[]) 
 {
+	children_list = lst_new(); 
 
 	char* argv_child[INPUT_SIZE];
-
 	int numtokens;
 
 	pthread_t monitor;
-
-	pthread_mutex_t mutex;
-
-	pthread_mutex_init(&mutex, NULL);
-
-	struct main_status main_status = {0, 0, &mutex};
-
-	pthread_create(&monitor, NULL, task_monitor, &main_status);
+	pthread_create(&monitor, NULL, task_monitor, NULL);
+	
 	puts("<< PAR-SHELL READY >>"); 
 
 	for(;;) // breaks upon "exit" input
@@ -48,27 +48,28 @@ int main(int argc, char* argv[])
 		else if (!strcmp(argv_child[0], "exit")) 
 		{
 			pthread_mutex_lock(&mutex);
-
-			main_status.exit_called += 1;
-
+			exit_called += 1;
 			pthread_mutex_unlock(&mutex);
 
 			pthread_join(monitor, NULL);
 
-			int i;
-			for (i = 0; i < main_status.children_count; i++) // prints all pids, return values, and execution times of all children
-				printf("Process %d finished with status %d. Execution time: %d\n", 
-				main_status.children_pid_arr[i], main_status.children_status_arr[i], (int) main_status.children_time_arr[i]);
-
+			lst_print(children_list); 
+			lst_destroy(children_list);
 			break;
 		}
 
-		else if (par_run(argv_child) != -1) 
+
+		else
 		{
+			int pid = par_run(argv_child);
+			if (pid != -1)
+			{
 			pthread_mutex_lock(&mutex);
-			main_status.children_count += 1; // new child created here
+				children_count++;
+				insert_new_process(children_list, pid, time(NULL));
 			pthread_mutex_unlock(&mutex);
-		}
+			}
+		} 
 	}
 
 	return 0;	
