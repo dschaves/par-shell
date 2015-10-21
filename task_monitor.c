@@ -55,9 +55,8 @@ void* task_monitor(void* _main_status)
 
 			if (pid == -1)
 			{
-				perror("par-shell: [ERROR] couldn't wait on child"); 
+				perror("par-shell: [ERROR] couldn't wait on child."); 
 				status = -1;
-				goto failure;
 			}
 		
 			if (finish_time < 0)
@@ -86,5 +85,6 @@ void* task_monitor(void* _main_status)
 
 	}
 
-	return NULL; 
+success:	return NULL; //FIXME: same procedure for success and failure.
+failure:	return NULL; 
 }
