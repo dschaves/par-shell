@@ -4,8 +4,8 @@
 #include <unistd.h> // sleep 
 #include <pthread.h> // mutex
 
-#include "task_monitor.h"
-#include "main.h"
+#include "task_monitor.h" 
+#include "main.h" // struct main_status
 
 void* task_monitor(void* _main_status)
 {
@@ -80,12 +80,11 @@ void* task_monitor(void* _main_status)
 		}
 
 		else if (exit_called == 1)
-				goto success;
+			break;
 
-		else sleep(1); //sleep if no processes are waiting to be waited.
+		else sleep(1); //sleep if no children are to be waited on.
 
 	}
 
-	success: return NULL; //FIXME: este return nao faz sentido
-	failure: return NULL; //FIXME: ditto
+	return NULL; 
 }
