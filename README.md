@@ -1,7 +1,6 @@
-# 21/10. Já funciona. Woot.
+# 22/10 Já está mudado para listas. 
 
 A branch principal é agora entrega2_listas.
-Próximo passo é mudar de vectores para listas.
 
 # SO1
 Sistemas Operativos, entrega 2!

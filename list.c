@@ -64,7 +64,7 @@ void lst_print(list_t *list)
 	item = list->first;
 	while (item != NULL){
 		totaltime = item->endtime - item->starttime;
-		printf("Process %d finished. Execution time: %ds\n", item->pid, totaltime);
+		printf("Process %d finished with execution time: %d s\n", item->pid, totaltime);
 		item = item->next;
 	}
 }
