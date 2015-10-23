@@ -1,0 +1,301 @@
+Process 8694 started to generate Fibonacci up to 298.
+Process 8694 finished Fibonacci series at value: 1938697607916024098.
+Process 8674 started to generate Fibonacci up to 499.
+Process 8674 finished Fibonacci series at value: 17929816685963478168.
+Process 8677 started to generate Fibonacci up to 621.
+Process 8677 finished Fibonacci series at value: 12958516310938854493.
+Process 8744 started to generate Fibonacci up to 1127.
+Process 8744 finished Fibonacci series at value: 16764727963731199695.
+Process 8743 started to generate Fibonacci up to 1403.
+Process 8743 finished Fibonacci series at value: 15059116139295022871.
+Process 8689 started to generate Fibonacci up to 1610.
+Process 8689 finished Fibonacci series at value: 1646307497191199281.
+Process 8730 started to generate Fibonacci up to 1956.
+Process 8730 finished Fibonacci series at value: 8293232909635041225.
+Process 8700 started to generate Fibonacci up to 2174.
+Process 8700 finished Fibonacci series at value: 2264205277740148361.
+Process 8684 started to generate Fibonacci up to 2563.
+Process 8684 finished Fibonacci series at value: 16815907355172283224.
+Process 8695 started to generate Fibonacci up to 2715.
+Process 8695 finished Fibonacci series at value: 11019412369555285809.
+Process 8692 started to generate Fibonacci up to 2773.
+Process 8692 finished Fibonacci series at value: 13546371499801076208.
+Process 8751 started to generate Fibonacci up to 2922.
+Process 8751 finished Fibonacci series at value: 1725162468549445613.
+Process 8739 started to generate Fibonacci up to 3096.
+Process 8739 finished Fibonacci series at value: 12237180371584002033.
+Process 8747 started to generate Fibonacci up to 3380.
+Process 8747 finished Fibonacci series at value: 15204428563494468117.
+Process 8657 started to generate Fibonacci up to 4642.
+Process 8657 finished Fibonacci series at value: 10970110921440450530.
+Process 8656 started to generate Fibonacci up to 4923.
+Process 8656 finished Fibonacci series at value: 6389998325482012273.
+Process 8653 started to generate Fibonacci up to 5188.
+Process 8653 finished Fibonacci series at value: 3930604137910101506.
+Process 8671 started to generate Fibonacci up to 5385.
+Process 8671 finished Fibonacci series at value: 8911724343491781141.
+Process 8660 started to generate Fibonacci up to 5786.
+Process 8660 finished Fibonacci series at value: 4137989544657632273.
+Process 8745 started to generate Fibonacci up to 5746.
+Process 8745 finished Fibonacci series at value: 13784986699154077282.
+Process 8662 started to generate Fibonacci up to 6041.
+Process 8662 finished Fibonacci series at value: 1738674811395261995.
+Process 8741 started to generate Fibonacci up to 6055.
+Process 8741 finished Fibonacci series at value: 2272765063059449736.
+Process 8701 started to generate Fibonacci up to 6191.
+Process 8701 finished Fibonacci series at value: 238595089961686367.
+Process 8658 started to generate Fibonacci up to 7203.
+Process 8658 finished Fibonacci series at value: 6240109278653704769.
+Process 8680 started to generate Fibonacci up to 7077.
+Process 8680 finished Fibonacci series at value: 14409355468947495949.
+Process 8691 started to generate Fibonacci up to 7373.
+Process 8691 finished Fibonacci series at value: 11381407697883645523.
+Process 8703 started to generate Fibonacci up to 7224.
+Process 8703 finished Fibonacci series at value: 9992918153692025649.
+Process 8717 started to generate Fibonacci up to 7340.
+Process 8717 finished Fibonacci series at value: 5910567187594018981.
+Process 8720 started to generate Fibonacci up to 7828.
+Process 8720 finished Fibonacci series at value: 2711280122289717634.
+Process 8668 started to generate Fibonacci up to 7840.
+Process 8668 finished Fibonacci series at value: 870678096248287714.
+Process 8669 started to generate Fibonacci up to 8459.
+Process 8669 finished Fibonacci series at value: 2612011521518297655.
+Process 8713 started to generate Fibonacci up to 8819.
+Process 8713 finished Fibonacci series at value: 9491819168429818759.
+Process 8666 started to generate Fibonacci up to 9571.
+Process 8666 finished Fibonacci series at value: 8621413796241924056.
+Process 8733 started to generate Fibonacci up to 10147.
+Process 8733 finished Fibonacci series at value: 18219853793282454232.
+Process 8655 started to generate Fibonacci up to 10271.
+Process 8655 finished Fibonacci series at value: 17513555277879243327.
+Process 8728 started to generate Fibonacci up to 10969.
+Process 8728 finished Fibonacci series at value: 7178649712088471072.
+Process 8709 started to generate Fibonacci up to 10697.
+Process 8709 finished Fibonacci series at value: 2085152320595091723.
+Process 8688 started to generate Fibonacci up to 10892.
+Process 8688 finished Fibonacci series at value: 1172588114354431205.
+Process 8665 started to generate Fibonacci up to 10881.
+Process 8665 finished Fibonacci series at value: 3367027658445467333.
+Process 8714 started to generate Fibonacci up to 11315.
+Process 8714 finished Fibonacci series at value: 15679745419622299399.
+Process 8750 started to generate Fibonacci up to 11756.
+Process 8750 finished Fibonacci series at value: 3447517077991542309.
+Process 8731 started to generate Fibonacci up to 12096.
+Process 8731 finished Fibonacci series at value: 6527315010303071361.
+Process 8740 started to generate Fibonacci up to 12000.
+Process 8740 finished Fibonacci series at value: 6921746753236592321.
+Process 8675 started to generate Fibonacci up to 12024.
+Process 8675 finished Fibonacci series at value: 10786493277577427633.
+Process 8719 started to generate Fibonacci up to 12347.
+Process 8719 finished Fibonacci series at value: 13016842761845988503.
+Process 8676 started to generate Fibonacci up to 12659.
+Process 8676 finished Fibonacci series at value: 16920950343582540167.
+Process 8672 started to generate Fibonacci up to 12861.
+Process 8672 finished Fibonacci series at value: 3828012714304581245.
+Process 8722 started to generate Fibonacci up to 12912.
+Process 8722 finished Fibonacci series at value: 5014239737890953057.
+Process 8652 started to generate Fibonacci up to 12959.
+Process 8652 finished Fibonacci series at value: 12163700524542299967.
+Process 8679 started to generate Fibonacci up to 14164.
+Process 8679 finished Fibonacci series at value: 5706739999456080770.
+Process 8711 started to generate Fibonacci up to 14027.
+Process 8711 finished Fibonacci series at value: 3989616576713614775.
+Process 8708 started to generate Fibonacci up to 14318.
+Process 8708 finished Fibonacci series at value: 2953221812574968361.
+Process 8746 started to generate Fibonacci up to 14053.
+Process 8746 finished Fibonacci series at value: 13907841612474950320.
+Process 8702 started to generate Fibonacci up to 14246.
+Process 8702 finished Fibonacci series at value: 8011984910071104377.
+Process 8654 started to generate Fibonacci up to 14923.
+Process 8654 finished Fibonacci series at value: 12110304947038110136.
+Process 8706 started to generate Fibonacci up to 15267.
+Process 8706 finished Fibonacci series at value: 7116270652392554817.
+Process 8726 started to generate Fibonacci up to 15698.
+Process 8726 finished Fibonacci series at value: 1200768313048602081.
+Process 8721 started to generate Fibonacci up to 16492.
+Process 8721 finished Fibonacci series at value: 17472768554572306114.
+Process 8729 started to generate Fibonacci up to 17724.
+Process 8729 finished Fibonacci series at value: 16146911706741893177.
+Process 8667 started to generate Fibonacci up to 18069.
+Process 8667 finished Fibonacci series at value: 1007996324642601837.
+Process 8686 started to generate Fibonacci up to 18548.
+Process 8686 finished Fibonacci series at value: 12207664496344308629.
+Process 8687 started to generate Fibonacci up to 19887.
+Process 8687 finished Fibonacci series at value: 15360399469819511993.
+Process 8732 started to generate Fibonacci up to 19830.
+Process 8732 finished Fibonacci series at value: 972915099284002021.
+Process 8712 started to generate Fibonacci up to 20368.
+Process 8712 finished Fibonacci series at value: 9365683451340981858.
+Process 8673 started to generate Fibonacci up to 20069.
+Process 8673 finished Fibonacci series at value: 8786436607585684419.
+Process 8748 started to generate Fibonacci up to 20717.
+Process 8748 finished Fibonacci series at value: 11404959749682417555.
+Process 8736 started to generate Fibonacci up to 20970.
+Process 8736 finished Fibonacci series at value: 16247873932673965293.
+Process 8734 started to generate Fibonacci up to 21455.
+Process 8734 finished Fibonacci series at value: 18098893259305299615.
+Process 8659 started to generate Fibonacci up to 21754.
+Process 8659 finished Fibonacci series at value: 16598466743166283682.
+Process 8704 started to generate Fibonacci up to 22463.
+Process 8704 finished Fibonacci series at value: 8728197417286728575.
+Process 8693 started to generate Fibonacci up to 22614.
+Process 8693 finished Fibonacci series at value: 9951000951065193125.
+Process 8735 started to generate Fibonacci up to 22898.
+Process 8735 finished Fibonacci series at value: 11197552918166800033.
+Process 8697 started to generate Fibonacci up to 22816.
+Process 8697 finished Fibonacci series at value: 3280310264285535714.
+Process 8683 started to generate Fibonacci up to 24053.
+Process 8683 finished Fibonacci series at value: 150790762911875939.
+Process 8685 started to generate Fibonacci up to 24738.
+Process 8685 finished Fibonacci series at value: 9492225667164360797.
+Process 8723 started to generate Fibonacci up to 24513.
+Process 8723 finished Fibonacci series at value: 14057287566660181829.
+Process 8696 started to generate Fibonacci up to 24450.
+Process 8696 finished Fibonacci series at value: 15691515757893476381.
+Process 8705 started to generate Fibonacci up to 25098.
+Process 8705 finished Fibonacci series at value: 10510637666579541805.
+Process 8710 started to generate Fibonacci up to 26434.
+Process 8710 finished Fibonacci series at value: 16293293762636275938.
+Process 8715 started to generate Fibonacci up to 26690.
+Process 8715 finished Fibonacci series at value: 5361832694275228033.
+Process 8699 started to generate Fibonacci up to 27197.
+Process 8699 finished Fibonacci series at value: 14521312689736193715.
+Process 8690 started to generate Fibonacci up to 27120.
+Process 8690 finished Fibonacci series at value: 12913398626947598945.
+Process 8670 started to generate Fibonacci up to 27513.
+Process 8670 finished Fibonacci series at value: 286992121042184053.
+Process 8663 started to generate Fibonacci up to 27928.
+Process 8663 finished Fibonacci series at value: 2882391994546343714.
+Process 8727 started to generate Fibonacci up to 27822.
+Process 8727 finished Fibonacci series at value: 13600957185779163605.
+Process 8737 started to generate Fibonacci up to 29094.
+Process 8737 finished Fibonacci series at value: 11770745554562005829.
+Process 8664 started to generate Fibonacci up to 29231.
+Process 8664 finished Fibonacci series at value: 17823198414331504991.
+Process 8716 started to generate Fibonacci up to 29535.
+Process 8716 finished Fibonacci series at value: 441414657603682841.
+Process 8678 started to generate Fibonacci up to 29395.
+Process 8678 finished Fibonacci series at value: 6628688892011533080.
+Process 8681 started to generate Fibonacci up to 30514.
+Process 8681 finished Fibonacci series at value: 2823143040576011362.
+Process 8698 started to generate Fibonacci up to 30092.
+Process 8698 finished Fibonacci series at value: 8649597057495174885.
+Process 8661 started to generate Fibonacci up to 29964.
+Process 8661 finished Fibonacci series at value: 4158982039990432345.
+Process 8742 started to generate Fibonacci up to 30284.
+Process 8742 finished Fibonacci series at value: 7263164014241938789.
+Process 8725 started to generate Fibonacci up to 30698.
+Process 8725 finished Fibonacci series at value: 17518480261615730673.
+Process 8707 started to generate Fibonacci up to 31031.
+Process 8707 finished Fibonacci series at value: 9442067840984534383.
+Process 8749 started to generate Fibonacci up to 31497.
+Process 8749 finished Fibonacci series at value: 8728694322606587413.
+Process 8718 started to generate Fibonacci up to 31975.
+Process 8718 finished Fibonacci series at value: 12088904874926423688.
+Process 8682 started to generate Fibonacci up to 32016.
+Process 8682 finished Fibonacci series at value: 11411012984577081249.
+Process 8724 started to generate Fibonacci up to 32375.
+Process 8724 finished Fibonacci series at value: 4411037393913930735.
+Process 8738 started to generate Fibonacci up to 32428.
+Process 8738 finished Fibonacci series at value: 1542074038739188930.
+<< PAR-SHELL READY >>
+Process 8751 finished with execution time: 27 s
+Process 8750 finished with execution time: 92 s
+Process 8749 finished with execution time: 153 s
+Process 8748 finished with execution time: 132 s
+Process 8747 finished with execution time: 30 s
+Process 8746 finished with execution time: 105 s
+Process 8745 finished with execution time: 50 s
+Process 8744 finished with execution time: 11 s
+Process 8743 finished with execution time: 13 s
+Process 8742 finished with execution time: 153 s
+Process 8741 finished with execution time: 52 s
+Process 8740 finished with execution time: 94 s
+Process 8739 finished with execution time: 28 s
+Process 8738 finished with execution time: 154 s
+Process 8737 finished with execution time: 151 s
+Process 8736 finished with execution time: 133 s
+Process 8735 finished with execution time: 138 s
+Process 8734 finished with execution time: 135 s
+Process 8733 finished with execution time: 81 s
+Process 8732 finished with execution time: 129 s
+Process 8731 finished with execution time: 93 s
+Process 8730 finished with execution time: 18 s
+Process 8729 finished with execution time: 121 s
+Process 8728 finished with execution time: 86 s
+Process 8727 finished with execution time: 150 s
+Process 8726 finished with execution time: 111 s
+Process 8725 finished with execution time: 153 s
+Process 8724 finished with execution time: 154 s
+Process 8723 finished with execution time: 143 s
+Process 8722 finished with execution time: 97 s
+Process 8721 finished with execution time: 115 s
+Process 8720 finished with execution time: 65 s
+Process 8719 finished with execution time: 96 s
+Process 8718 finished with execution time: 153 s
+Process 8717 finished with execution time: 63 s
+Process 8716 finished with execution time: 152 s
+Process 8715 finished with execution time: 148 s
+Process 8714 finished with execution time: 88 s
+Process 8713 finished with execution time: 74 s
+Process 8712 finished with execution time: 130 s
+Process 8711 finished with execution time: 104 s
+Process 8710 finished with execution time: 146 s
+Process 8709 finished with execution time: 86 s
+Process 8708 finished with execution time: 105 s
+Process 8707 finished with execution time: 153 s
+Process 8706 finished with execution time: 109 s
+Process 8705 finished with execution time: 144 s
+Process 8704 finished with execution time: 136 s
+Process 8703 finished with execution time: 62 s
+Process 8702 finished with execution time: 106 s
+Process 8701 finished with execution time: 53 s
+Process 8700 finished with execution time: 20 s
+Process 8699 finished with execution time: 148 s
+Process 8698 finished with execution time: 152 s
+Process 8697 finished with execution time: 138 s
+Process 8696 finished with execution time: 143 s
+Process 8695 finished with execution time: 25 s
+Process 8694 finished with execution time: 3 s
+Process 8693 finished with execution time: 137 s
+Process 8692 finished with execution time: 26 s
+Process 8691 finished with execution time: 61 s
+Process 8690 finished with execution time: 149 s
+Process 8689 finished with execution time: 15 s
+Process 8688 finished with execution time: 87 s
+Process 8687 finished with execution time: 128 s
+Process 8686 finished with execution time: 124 s
+Process 8685 finished with execution time: 142 s
+Process 8684 finished with execution time: 24 s
+Process 8683 finished with execution time: 141 s
+Process 8682 finished with execution time: 153 s
+Process 8681 finished with execution time: 152 s
+Process 8680 finished with execution time: 61 s
+Process 8679 finished with execution time: 104 s
+Process 8678 finished with execution time: 152 s
+Process 8677 finished with execution time: 6 s
+Process 8676 finished with execution time: 96 s
+Process 8675 finished with execution time: 94 s
+Process 8674 finished with execution time: 5 s
+Process 8673 finished with execution time: 130 s
+Process 8672 finished with execution time: 97 s
+Process 8671 finished with execution time: 48 s
+Process 8670 finished with execution time: 149 s
+Process 8669 finished with execution time: 71 s
+Process 8668 finished with execution time: 65 s
+Process 8667 finished with execution time: 122 s
+Process 8666 finished with execution time: 77 s
+Process 8665 finished with execution time: 88 s
+Process 8664 finished with execution time: 151 s
+Process 8663 finished with execution time: 150 s
+Process 8662 finished with execution time: 52 s
+Process 8661 finished with execution time: 153 s
+Process 8660 finished with execution time: 50 s
+Process 8659 finished with execution time: 135 s
+Process 8658 finished with execution time: 60 s
+Process 8657 finished with execution time: 42 s
+Process 8656 finished with execution time: 43 s
+Process 8655 finished with execution time: 83 s
+Process 8654 finished with execution time: 107 s
+Process 8653 finished with execution time: 45 s
+Process 8652 finished with execution time: 99 s

@@ -8,7 +8,6 @@
 #include "list.h"
 #include "main.h"
 
-
 #define INPUT_SIZE 7
 
 /* HERE: Define and initialize all global variables in main.h */

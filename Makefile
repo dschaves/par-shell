@@ -20,3 +20,9 @@ list.o: list.c list.h
 	 
 clean:
 	rm -i *.o
+
+test: gen_input.sh fibonacci par-shell
+	bash gen_input.sh
+	./par-shell < input.txt > output.txt &
+	tail -f output.txt
+
