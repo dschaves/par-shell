@@ -4,6 +4,6 @@
 n_inputs=100
 
 for n in $(seq 1 $n_inputs); do
-	echo fibonacci $RANDOM >> input.txt
+	echo fibonacci $((RANDOM%1000)) >> input.txt
 done
 echo "exit" >> input.txt

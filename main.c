@@ -10,29 +10,32 @@
 
 #define INPUT_SIZE 7
 
-/* HERE: Define and initialize all global variables in main.h */
+/* HERE: Define and initialize all global variables declared in main.h
+	children_list is initialized inside main since involves funciton call. 
+*/
 unsigned int children_count = 0;
 unsigned int waited_children = 0;
 int exit_called = 0;
 pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 list_t* children_list;
 
+
 int main(int argc, char* argv[]) 
 {
-	children_list = lst_new();
+	children_list = lst_new(); // see above
 
-	char* argv_child[INPUT_SIZE];
+	char* argv_child[INPUT_SIZE]; // argv passed to forked child.
 
 	pthread_t thread_monitor;	
 
-	pthread_create(&thread_monitor, NULL, monitor, NULL);
+	pthread_create(&thread_monitor, NULL, monitor, NULL); // multi-threading starts here
 	
 	puts("<< PAR-SHELL READY >>"); 
 
 	for(;;) // breaks upon "exit" input
 	{
 
-		switch (readLineArguments(argv_child, INPUT_SIZE)) // Consegui! 
+		switch (readLineArguments(argv_child, INPUT_SIZE)) // Consegui!
 		{
 			case -1: perror("par-shell: couldn't read input");
 			case 0: continue;

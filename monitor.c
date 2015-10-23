@@ -30,9 +30,8 @@ void* monitor(void* _)
 			*		1 - We wait for the waited_children-th child to finish
 			*		2 - From function wait we get pid
 			*		3 - From function time we get the time child took to finish
-			*		4 - Save pid, and time into array for later printing 
-				FIXME faz update a estes comentarios, que agora ja e com listas e nao com arrays
-			*		5 - Check all necessary errors
+			*		4 - Update children_list with pid and endtime for this child. 
+			*		X - Check all necessary errors
 			*/
 
 

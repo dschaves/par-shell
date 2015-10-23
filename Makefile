@@ -1,7 +1,7 @@
 # Makefile
 
-par-shell: commandlinereader.o par_run.o main.o monitor.o list.o
-	gcc -pthread -g -o par-shell commandlinereader.o par_run.o main.o monitor.o list.o
+par-shell: commandlinereader.o par_run.o main.o monitor.o list.o 
+	gcc -pthread -g -o par-shell commandlinereader.o par_run.o main.o monitor.o list.o 
 
 main.o: main.c main.h commandlinereader.h par_run.h monitor.h list.h
 	gcc -pthread -Wall -g -c main.c
@@ -19,10 +19,11 @@ list.o: list.c list.h
 	gcc -pthread -Wall -g -c list.c
 	 
 clean:
-	rm -i *.o
+	rm *.o
 
 test: gen_input.sh fibonacci par-shell
 	bash gen_input.sh
-	./par-shell < input.txt > output.txt &
-	tail -f output.txt
+	./par-shell < input.txt | tee output.txt
 
+delete: par-shell
+	rm par-shell fibonacci
