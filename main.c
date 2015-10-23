@@ -28,8 +28,10 @@ int main(int argc, char* argv[])
 
 	pthread_t thread_monitor;	
 
-	pthread_create(&thread_monitor, NULL, monitor, NULL); // multi-threading starts here
-	
+	if(pthread_create(&thread_monitor, NULL, monitor, NULL)) // multi-threading starts here
+		perror("par-shell: Couldn't create monitoring thread. Will not be able to wait for children or monitor.");
+
+
 	puts("<< PAR-SHELL READY >>"); 
 
 	for(;;) // breaks upon "exit" input
@@ -47,7 +49,8 @@ int main(int argc, char* argv[])
 			exit_called = 1;
 			pthread_mutex_unlock(&main_mutex);
 
-			pthread_join(thread_monitor, NULL);
+			if(pthread_join(thread_monitor, NULL))
+				perror("par-shell: couldn't join with monitor thread");
 
 			lst_print(children_list); 
 			lst_destroy(children_list);
