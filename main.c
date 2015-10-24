@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	pthread_t thread_monitor;	
 
 	if(pthread_create(&thread_monitor, NULL, monitor, NULL)) // multi-threading starts here
-		perror("par-shell: Couldn't create monitoring thread. Will not be able to wait for children or monitor.");
+		perror("par-shell: Couldn't create monitoring thread. Will not be able to monitor and wait for children.");
 
 
 	puts("<< PAR-SHELL READY >>"); 
@@ -45,15 +45,17 @@ int main(int argc, char* argv[])
 
 		if (!strcmp(argv_child[0], "exit")) // user asks to exit
 		{
-			pthread_mutex_lock(&main_mutex);
+			if (pthread_mutex_lock(&main_mutex)) perror("Couldn't lock mutex. Can't continue: aborting."), exit(1);
 			exit_called = 1;
-			pthread_mutex_unlock(&main_mutex);
+			if (pthread_mutex_unlock(&main_mutex)) perror("Couldn't lock mutex. Can't continue: aborting."), exit(1);
 
-			if(pthread_join(thread_monitor, NULL))
+			if (pthread_join(thread_monitor, NULL))
 				perror("par-shell: couldn't join with monitor thread");
 
 			lst_print(children_list); 
 			lst_destroy(children_list);
+
+			pthread_mutex_destroy(&main_mutex);
 
 			break;
 		}

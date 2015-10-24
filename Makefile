@@ -21,9 +21,11 @@ list.o: list.c list.h
 clean:
 	rm *.o
 
-test: gen_input.sh fibonacci par-shell
-	bash gen_input.sh
-	./par-shell < input.txt | tee output.txt
+fibonacci: fibonacci.c
+	gcc fibonacci.c -o fibonacci
+
+test: fibonacci par-shell
+	bash par-test.sh
 
 delete: par-shell
 	rm par-shell fibonacci
