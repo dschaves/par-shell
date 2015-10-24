@@ -1,12 +1,12 @@
->input.txt 
->output.txt
+>test.in 
+>test.out
 	
 for n in {0..100}; do 
-	echo fibonacci $(($RANDOM%1000)) >> input.txt 
+	echo fibonacci $(($RANDOM%1000)) >> test.in 
 done
 
-echo "exit" >> input.txt
+echo "exit" >> test.in
 	
-./par-shell < input.txt # | tee output.txt
+./par-shell < test.in  | tee test.out
 
-#printf "Output lines: %d" $(wc -l output.txt)
+echo "Output lines:" $(wc -l test.out)
