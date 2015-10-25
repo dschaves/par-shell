@@ -1,7 +1,9 @@
 #ifndef PARSHELL_MAIN_H
 #define PARSHELL_MAIN_H
 
-extern sem_t can_exec;
+#include <stdbool.h>
+
+extern sem_t can_fork;
 extern sem_t can_wait;
 
 /*  
@@ -12,11 +14,11 @@ extern sem_t can_wait;
 
 void atomic_inc_children_count(void);
 void atomic_inc_waited_children(void);
-bool atomic_exit_called(void);
+bool atomic_get_exit_called(void);
+void atomic_set_exit_called(bool);
 
 void atomic_insert_new_process(int pid, time_t starttime);
 void atomic_update_terminated_process(int pid, time_t endtime);
-
 
 #if 0
 extern unsigned int children_count; // counts all successfully forked and execved children.

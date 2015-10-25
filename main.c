@@ -10,9 +10,9 @@
 #include "main.h"
 
 #define CHILD_ARGV_SIZE 20
-#define MAX_PAR 7
+#define MAXPAR 7
 
-// BEGIN GLOBAL VARIABLES
+//*********** BEGIN GLOBAL VARIABLES ***********/
 
 sem_t can_wait; // semaphore for being able to wait on children; initialized in main
 sem_t can_fork; // semaphore for being able to fork children; initialized in main
@@ -26,14 +26,14 @@ static pthread_mutex_t main_mutex; // initialized in main
 
 static list_t* children_list; // initialized in main
 
-// END GLOBAL VARIABLES
+//*********** END GLOBAL VARIABLES ***********/
 
 
 #define IN_MAIN_MUTEX(INSTRUCTIONS) \
     { \
-		if (pthread_mutex_lock(&main_mutex)) perror("Couldn't lock mutex. Can't continue. Aborting."), exit(1); \
+		if (pthread_mutex_lock(&main_mutex)) perror("Couldn't lock mutex. Can't continue. Aborting."), exit(EXIT_FAILURE); \
     	INSTRUCTIONS \
-		if (pthread_mutex_unlock(&main_mutex)) perror("Couldn't unlock mutex. Can't continue. Aborting."), exit(1); \
+		if (pthread_mutex_unlock(&main_mutex)) perror("Couldn't unlock mutex. Can't continue. Aborting."), exit(EXIT_FAILURE); \
 	}
 
 void atomic_insert_new_process(int pid, time_t starttime)
@@ -51,21 +51,26 @@ void atomic_inc_children_count(void)
 	IN_MAIN_MUTEX(++children_count;)
 }
 
-void atomic_inc_waited_children(void);
+void atomic_inc_waited_children(void)
 {
 	IN_MAIN_MUTEX(++waited_children;)
 }
 
 bool atomic_get_exit_called(void)
 {
-	IN_MAIN_MUTEX(bool exit_called_l = exit_called;)	
+	bool exit_called_l;	
+	IN_MAIN_MUTEX(exit_called_l = exit_called;)	
 	return exit_called_l;
 }
 
-void atomic_set_exit_called(bool bool)
+void atomic_set_exit_called(bool ola)
 {
-	IN_MAIN_MUTEX(exit_called = bool;)
+	IN_MAIN_MUTEX(exit_called = ola;)
 }
+
+
+
+
 
 int main(int argc, char* argv[]) 
 {	
@@ -99,7 +104,7 @@ int main(int argc, char* argv[])
 
 		if (!strcmp(argv_child[0], "exit")) // user asks to exit
 		{
-			atomic_set_exit_called
+			atomic_set_exit_called(true);
 
 			if (pthread_join(thread_monitor, NULL))
 				perror("par-shell: couldn't join with monitor thread");
@@ -113,10 +118,9 @@ int main(int argc, char* argv[])
 	lst_print(children_list); 
 	lst_destroy(children_list);		
 	pthread_mutex_destroy(&main_mutex);
-	sem_destroy(&children_sem);
+	sem_destroy(&can_fork);
+	sem_destroy(&can_wait);
 
 	return EXIT_SUCCESS;
 	
 }
-
-
