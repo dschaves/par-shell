@@ -8,6 +8,7 @@
 #include "main.h" // exit_called, main_mutex, children_list, waited_children, children_count
 #include "monitor.h" // self
 
+
 void* monitor(void* _)
 {
 
@@ -17,47 +18,39 @@ void* monitor(void* _)
 
 	for(;;)
 	{	
-		pthread_mutex_lock(&main_mutex);
-		children_waiting = (waited_children < children_count);
-		exit_called_l = exit_called;
-		pthread_mutex_unlock(&main_mutex);
+		if (atomic_get_exit_called()) pthread_exit(NULL);
 
-		if (children_waiting) 
-		{
-	   
-			/* In this next part:
-			*
-			*		1 - We wait for the waited_children-th child to finish
-			*		2 - From function wait we get pid
-			*		3 - From function time we get the time child took to finish
-			*		4 - Update children_list with pid and endtime for this child. 
-			*		X - Check all necessary errors
-			*/
+		sem_wait(&can_wait); // XXX
 
+		/* In this next part:
+		*
+		*		1 - We wait for the waited_children-th child to finish
+		*		2 - From function wait we get pid
+		*		3 - From function time we get the time child took to finish
+		*		4 - Update children_list with pid and endtime for this child. 
+		*		Check all necessary errors.
+		*/
 
-			pid = wait(NULL);		// XXX: waits here
-			endtime = time(NULL); 
-		
-			if (endtime == -1) 
-				perror("par-shell: [ERROR] couldn't get finish time for child");
+		pid = wait(NULL);		// XXX
 
-			pthread_mutex_lock(&main_mutex);
+		sem_post(can_exec); 	// XXX
+
+		endtime = time(NULL); 
+	
+		if (endtime == -1) 
+			perror("par-shell: [ERROR] couldn't get finish time for child");
+
+		IN_MAIN_MUTEX
+		(
 
 			if (pid == -1)
 				perror("par-shell: [ERROR] couldn't wait on child");  
 
 			else 
-				waited_children += 1;
+				++waited_children;
 
 			update_terminated_process(children_list, pid, endtime); //XXX: updates here
-
-			pthread_mutex_unlock(&main_mutex);
-		}
-
-		else if (exit_called_l == 1)
-				break;
-
-		else sleep(1); //sleep if no processes are waiting to be waited.
+		)
 
 	}
 
