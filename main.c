@@ -63,9 +63,9 @@ bool atomic_get_exit_called(void)
 	return exit_called_l;
 }
 
-void atomic_set_exit_called(bool ola)
+void atomic_set_exit_called(bool b)
 {
-	IN_MAIN_MUTEX(exit_called = ola;)
+	IN_MAIN_MUTEX(exit_called = b;)
 }
 
 
