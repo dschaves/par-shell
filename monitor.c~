@@ -26,9 +26,9 @@ void* monitor(void* _)
 
 		pid = wait(NULL); // waits for next child to terminate
 
-		sem_post(&can_fork); // signals that more children can be forked 
+		sem_post(&can_fork); // 
 
-		time(&endtime);
+		time(&endtime); 
 	
 		if (endtime == -1) 
 			perror("par-shell: [ERROR] couldn't get finish time for child");

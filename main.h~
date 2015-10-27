@@ -4,9 +4,7 @@
 #include <stdbool.h>
 #define MAXPAR 8
 
-/* can_fork: semaphore indicating being able to fork more children 
- * can_wait: semaphore indicating there are unwaited children
- */
+/* can_fork: semaph*/
 extern sem_t can_fork;
 extern sem_t can_wait;
 

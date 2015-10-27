@@ -2,7 +2,7 @@
 #include <string.h> // strcmp()
 #include <pthread.h> // all
 #include <semaphore.h> // sem_init()
-#include <stdbool.h>
+#include <bool.h>
 
 #include "commandlinereader.h"
 #include "par_run.h"
