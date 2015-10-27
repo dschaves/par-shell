@@ -4,7 +4,7 @@
 #include <semaphore.h>
 
 #include "par_run.h" // self
-#include "main.h" // children_list, children_count
+#include "main.h" // children_list, children_count, can_fork
 #include "list.h" // insert_new_process
 
 
@@ -21,6 +21,10 @@ void par_run(char* argVector[])
 	else if (pid == 0) // is child
 	{
 		execv(argVector[0], argVector);
+
+		if (argVector[0][0] != '/')		
+			execvp(argVector[0], argVector);
+
 		// next line only reached if execv fails.
 		perror("par-shell: exec failed");
 		exit(EXIT_FAILURE);

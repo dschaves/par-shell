@@ -10,73 +10,82 @@
 #include "main.h"
 
 #define CHILD_ARGV_SIZE 20
-#define MAXPAR 7
+#define MAXPAR 8
 
 //*********** BEGIN GLOBAL VARIABLES ***********/
-
-sem_t can_wait; // semaphore for being able to wait on children; initialized in main
-sem_t can_fork; // semaphore for being able to fork children; initialized in main
 
 static unsigned int children_count = 0; // counts all children successfully forked
 static unsigned int waited_children = 0; // counts all children succesffully waited on
 
+static list_t* children_list; // initialized in main
+
 static bool exit_called = false; // true after user inputs enter
 
-static pthread_mutex_t main_mutex; // initialized in main
+static pthread_mutex_t list_mutex; // initialized in main
+static pthread_mutex_t exit_called_mutex;
+static pthread_mutex_t waited_children_mutex;
+static pthread_mutex_t children_count_mutex;
 
-static list_t* children_list; // initialized in main
+static pthread_t thread_monitor;
+
+sem_t can_wait; // semaphore for being able to wait on children; initialized in main
+sem_t can_fork; // semaphore for being able to fork children; initialized in main
 
 //*********** END GLOBAL VARIABLES ***********/
 
-
-#define IN_MAIN_MUTEX(INSTRUCTIONS) \
-    { \
-		if (pthread_mutex_lock(&main_mutex)) perror("Couldn't lock mutex. Can't continue. Aborting."), exit(EXIT_FAILURE); \
-    	INSTRUCTIONS \
-		if (pthread_mutex_unlock(&main_mutex)) perror("Couldn't unlock mutex. Can't continue. Aborting."), exit(EXIT_FAILURE); \
-	}
-
-void atomic_insert_new_process(int pid, time_t starttime)
+inline void atomic_insert_new_process(int pid, time_t starttime)
 { 
-	IN_MAIN_MUTEX(insert_new_process(children_list, pid, starttime);) 
+	pthread_mutex_lock(&list_mutex);	
+	insert_new_process(children_list, pid, starttime); 
+	pthread_mutex_unlock(&list_mutex);	
 }
 
-void atomic_update_terminated_process(int pid, time_t endtime)
+inline void atomic_update_terminated_process(int pid, time_t endtime)
 { 
-	IN_MAIN_MUTEX(update_terminated_process(children_list, pid, endtime);)
+	
+	pthread_mutex_lock(&list_mutex);
+	update_terminated_process(children_list, pid, endtime);
+	pthread_mutex_unlock(&list_mutex);
 }
 
-void atomic_inc_children_count(void)
+inline void atomic_inc_children_count(void)
 {
-	IN_MAIN_MUTEX(++children_count;)
+	pthread_mutex_lock(&children_count_mutex);	
+	++children_count;
+	pthread_mutex_unlock(&children_count_mutex);
 }
 
-void atomic_inc_waited_children(void)
+inline void atomic_inc_waited_children(void)
 {
-	IN_MAIN_MUTEX(++waited_children;)
+	pthread_mutex_lock(&waited_children_mutex);
+	++waited_children;
+	pthread_mutex_unlock(&waited_children_mutex);
 }
 
-bool atomic_get_exit_called(void)
+inline bool atomic_get_exit_called(void)
 {
-	bool exit_called_l;	
-	IN_MAIN_MUTEX(exit_called_l = exit_called;)	
+	pthread_mutex_lock(&exit_called_mutex);
+	bool exit_called_l = exit_called;
+	pthread_mutex_unlock(&exit_called_mutex);
 	return exit_called_l;
 }
 
-void atomic_set_exit_called(bool b)
+inline void atomic_set_exit_called(bool b)
 {
-	IN_MAIN_MUTEX(exit_called = b;)
+	pthread_mutex_lock(&exit_called_mutex);	
+	exit_called = b;
+	pthread_mutex_unlock(&exit_called_mutex);	
 }
-
-
-
 
 
 int main(int argc, char* argv[]) 
 {	
 	children_list = lst_new(); // see above
 
-	pthread_mutex_init(&main_mutex, NULL);
+	pthread_mutex_init(&children_count_mutex, NULL);
+	pthread_mutex_init(&waited_children_mutex, NULL);
+	pthread_mutex_init(&exit_called_mutex, NULL);
+	pthread_mutex_init(&list_mutex, NULL);
 
 	char* argv_child[CHILD_ARGV_SIZE]; // argv passed to forked child. 
 
@@ -84,13 +93,10 @@ int main(int argc, char* argv[])
 
 	sem_init(&can_wait, 0, 0); //ditto
 
-	pthread_t thread_monitor;
-
-	if(pthread_create(&thread_monitor, NULL, monitor, NULL)) // multi-threading starts here
+	if (pthread_create(&thread_monitor, NULL, monitor, NULL)) // multi-threading starts here
 		perror("par-shell: Couldn't create monitoring thread. Will not be able to monitor and wait for children.");
 
-
-	puts("<< PAR-SHELL READY; accepting input at any time! >>"); 
+	printf("Par-shell now ready. Does not wait for jobs to exit!\n>>> "); 
 
 	for(;;) // breaks upon "exit" input
 	{
@@ -103,7 +109,8 @@ int main(int argc, char* argv[])
 		}
 
 		if (!strcmp(argv_child[0], "exit")) // user asks to exit
-		{
+		{		
+			sem_post(&can_wait);			
 			atomic_set_exit_called(true);
 
 			if (pthread_join(thread_monitor, NULL))
@@ -117,7 +124,10 @@ int main(int argc, char* argv[])
 
 	lst_print(children_list); 
 	lst_destroy(children_list);		
-	pthread_mutex_destroy(&main_mutex);
+	pthread_mutex_destroy(&children_count_mutex);
+	pthread_mutex_destroy(&waited_children_mutex);
+	pthread_mutex_destroy(&exit_called_mutex);
+	pthread_mutex_destroy(&list_mutex);
 	sem_destroy(&can_fork);
 	sem_destroy(&can_wait);
 

@@ -13,13 +13,16 @@ void* monitor(void* _)
 
 	time_t endtime;
 
-	int pid;
+	int pid, count;
 
 	for(;;)
 	{	
-		if (atomic_get_exit_called()) break;
 
 		sem_wait(&can_wait); // XXX
+	
+		sem_getvalue(&can_wait, &count);
+
+		if (atomic_get_exit_called() && !count) break;
 
 		pid = wait(NULL);		// XXX
 
