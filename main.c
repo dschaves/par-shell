@@ -10,7 +10,7 @@
 #include "list.h"
 #include "main.h"
 
-#define CHILD_ARGV_SIZE 20
+#define CHILD_ARGV_SIZE 7
 
 //*********** BEGIN GLOBAL VARIABLES ***********/
 
@@ -26,10 +26,14 @@ static pthread_mutex_t exit_called_mutex;
 static pthread_mutex_t waited_children_mutex;
 static pthread_mutex_t children_count_mutex;
 
+pthread_mutex_t fork_mutex;	  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX Inicializa o mutex para usar nas variaveis de condicao
+
 static pthread_t thread_monitor;
 
 sem_t can_wait; // semaphore for being able to wait on children; initialized in main
-sem_t can_fork; // semaphore for being able to fork children; initialized in main
+//sem_t can_fork; // semaphore for being able to fork children; initialized in main //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
+pthread_cond_t fork_cond;	  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX variavel de condicao do fork
+int can_fork = MAXPAR;            //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX condicao em si (numero max de processos)
 
 //*********** END GLOBAL VARIABLES ***********/
 
@@ -92,9 +96,13 @@ int main(int argc, char* argv[])
 	pthread_mutex_init(&exit_called_mutex, NULL);
 	pthread_mutex_init(&list_mutex, NULL);
 
+	pthread_mutex_init(&fork_mutex, NULL);  				//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX init do mutex do fork
+
 	char* argv_child[CHILD_ARGV_SIZE]; // argv passed to forked child. 
 
-	sem_init(&can_fork, 0, MAXPAR);	// args: semaphore, mode, count 
+	//sem_init(&can_fork, 0, MAXPAR);	// args: semaphore, mode, count	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
+
+	pthread_cond_init(&fork_cond, NULL);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX init da var condicao
 
 	sem_init(&can_wait, 0, 0); //ditto
 
@@ -108,13 +116,15 @@ int main(int argc, char* argv[])
 
 		switch (readLineArguments(argv_child, CHILD_ARGV_SIZE)) 
 		{
-			case -1: perror("par-shell: couldn't read input");
+			case -1: puts("par-shell: couldn't read input. Retrying.");
 			case 0: continue;
 		}
 
 		if (!strcmp(argv_child[0], "exit")) // user asks to exit
-		{		
-			sem_post(&can_wait);			
+		{	
+	
+			sem_post(&can_wait);
+			
 			atomic_set_exit_called(true);
 
 			if (pthread_join(thread_monitor, NULL))
@@ -132,7 +142,9 @@ int main(int argc, char* argv[])
 	pthread_mutex_destroy(&waited_children_mutex);
 	pthread_mutex_destroy(&exit_called_mutex);
 	pthread_mutex_destroy(&list_mutex);
-	sem_destroy(&can_fork);
+	pthread_mutex_destroy(&fork_mutex);  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX destroy do mutex do fork
+	pthread_cond_destroy(&fork_cond);    //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX  ""    ""    ""  da var condicao
+	//sem_destroy(&can_fork);	     //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
 	sem_destroy(&can_wait);
 
 	return EXIT_SUCCESS;
