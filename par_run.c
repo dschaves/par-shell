@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <pthread.h> //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX e necessario aqui tambem
 
 #include "par_run.h" // self
 #include "main.h" // children_list, children_count, can_fork
@@ -10,8 +11,11 @@
 
 void par_run(char* argVector[]) 
 {
-
-	sem_wait(&can_fork);
+	pthread_mutex_lock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+	while (can_fork == 0) pthread_cond_wait(&fork_cond,&fork_mutex);	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+	can_fork--;								//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+	//sem_wait(&can_fork);							//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+	pthread_mutex_unlock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 
 	pid_t pid = fork();
 

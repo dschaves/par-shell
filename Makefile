@@ -24,8 +24,5 @@ clean:
 fibonacci: fibonacci.c
 	gcc fibonacci.c -o fibonacci
 
-test: fibonacci par-shell par-test.sh
-	bash par-test.sh
-
-delete: 
+remove: 
 	rm par-shell fibonacci

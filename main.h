@@ -7,8 +7,11 @@
 /* can_fork: semaphore indicating being able to fork more children 
  * can_wait: semaphore indicating there are unwaited children
  */
-extern sem_t can_fork;
+//extern sem_t can_fork;		//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
+extern pthread_cond_t fork_cond;	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao da var condicao
+extern int can_fork;			//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao da condicao em si
 extern sem_t can_wait;
+extern pthread_mutex_t fork_mutex;	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao do mutex
 
 /* The following is an atomic API with setters and getters
  * for the static global variables defined in main.c.
