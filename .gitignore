@@ -3,3 +3,6 @@ par-shell
 fibonacci
 *.zip
 test*
+*.in
+*.out
+

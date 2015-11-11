@@ -9,6 +9,8 @@
 #include "main.h"
 
 #define CHILD_ARGV_SIZE 7
+#define BUFFER_SIZE 512
+
 //*********** BEGIN GLOBAL VARIABLES ***********/
 
 static list_t* children_list; // initialized in main
@@ -83,9 +85,15 @@ inline void inc_waited_children(void) { ++waited_children; }
 inline void inc_forked_children(void) { ++forked_children; }
 
 
+
+
+
+
 int main(int argc, char* argv[]) 
 {	
 	children_list = lst_new(); // initialized here due to function call
+
+	char input[BUFFER_SIZE];
 
 	char* argv_child[CHILD_ARGV_SIZE]; // argv passed to forked child. 
 
@@ -97,7 +105,7 @@ int main(int argc, char* argv[])
 	for(;;) // breaks upon "exit" input
 	{
 
-		switch (readLineArguments(argv_child, CHILD_ARGV_SIZE)) 
+		switch (readLineArguments(argv_child, CHILD_ARGV_SIZE, input, BUFFER_SIZE)) 
 		{
 			case -1: puts("par-shell: couldn't read input. Retrying.");
 			case 0: continue;
