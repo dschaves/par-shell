@@ -1,40 +1,36 @@
 #include <time.h> // time()
 #include <stdio.h> // perror()
 #include <sys/wait.h> // wait()
-#include <semaphore.h>
-#include <pthread.h>	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX e necessario agora
+#include <pthread.h> 
 
 #include "main.h" // exit_called, main_mutex, children_list, waited_children, children_count
 #include "monitor.h" // self
-
 
 void* monitor(void* _)
 {
 
 	time_t endtime;
 
-	int pid, count;
+	pid_t pid;
 
 	for(;;)
 	{	
+		pthread_mutex_lock(&children_mutex);
 
-		sem_wait(&can_wait); // waits for more children to be forked 
-	
-		sem_getvalue(&can_wait, &count); // gets sem_t can_wait's value into count
-
-		if (atomic_get_exit_called() && !count) break; 
+		if (atomic_get_exit_called() && !wait_slot_avaliable()) 
 		/* Only breaks if exit has been input AND there are no more children to be waited on. */
+		{
+			pthread_mutex_unlock(&children_mutex);
+			break;
+		}
 
-		pid = wait(NULL); // waits for next child to terminate
-		
-		pthread_mutex_lock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX lock do mutex
-		can_fork++;								//XXX XXX XXX XXX XXX XXX XXX XXX incrementa processos disp
-		pthread_cond_signal(&fork_cond);					//XXX XXX XXX XXX XXX XXX XXX XXX faz signal para par_run
-		pthread_mutex_unlock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX unlock do mutex
-		//sem_post(&can_fork); // signals that more children can be forked	//XXX XXX XXX XXX XXX XXX XXX XXX legacy
+		while (!wait_slot_avaliable()) 
+			pthread_cond_wait(&can_wait, &children_mutex);
+
+		pid = wait(NULL); // XXX: waits for next child to terminate
 
 		time(&endtime);
-	
+
 		if (endtime == -1) 
 			perror("par-shell: [ERROR] couldn't get finish time for child");
 
@@ -43,11 +39,12 @@ void* monitor(void* _)
 
 		else
 		{
-			atomic_inc_waited_children();
 			atomic_update_terminated_process(pid, endtime);
+			inc_waited_children();
+			pthread_cond_signal(&can_fork);	
 		}
 
+		pthread_mutex_unlock(&children_mutex);
 	}
-
 	return NULL;
 }

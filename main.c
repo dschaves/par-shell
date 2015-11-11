@@ -1,8 +1,6 @@
 #include <stdio.h> // getline()
 #include <string.h> // strcmp()
 #include <pthread.h> // all
-#include <semaphore.h> // sem_init()
-#include <stdbool.h>
 
 #include "commandlinereader.h"
 #include "par_run.h"
@@ -11,29 +9,27 @@
 #include "main.h"
 
 #define CHILD_ARGV_SIZE 7
-
 //*********** BEGIN GLOBAL VARIABLES ***********/
-
-static unsigned int children_count = 0; // counts all children successfully forked
-static unsigned int waited_children = 0; // counts all children succesffully waited on
 
 static list_t* children_list; // initialized in main
 
-static bool exit_called = false; // true after user inputs enter
-
-static pthread_mutex_t list_mutex; // initialized in main due to function call
-static pthread_mutex_t exit_called_mutex;
-static pthread_mutex_t waited_children_mutex;
-static pthread_mutex_t children_count_mutex;
-
-pthread_mutex_t fork_mutex;	  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX Inicializa o mutex para usar nas variaveis de condicao
-
 static pthread_t thread_monitor;
 
-sem_t can_wait; // semaphore for being able to wait on children; initialized in main
-//sem_t can_fork; // semaphore for being able to fork children; initialized in main //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
-pthread_cond_t fork_cond;	  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX variavel de condicao do fork
-int can_fork = MAXPAR;            //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX condicao em si (numero max de processos)
+static bool exit_called = false; // true after user inputs enter
+
+static unsigned int forked_children = 0; // counts all children successfully forked
+static unsigned int waited_children = 0; // counts all children succesffully waited on
+
+const unsigned int MAXPAR = 8; 
+
+static pthread_mutex_t exit_called_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_mutex_t children_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+pthread_cond_t can_fork = PTHREAD_COND_INITIALIZER;
+pthread_cond_t can_wait = PTHREAD_COND_INITIALIZER;
+
 
 //*********** END GLOBAL VARIABLES ***********/
 
@@ -42,14 +38,14 @@ int can_fork = MAXPAR;            //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
  * Mutual exclusion is guaranteed.
  */
 
- void atomic_insert_new_process(int pid, time_t starttime)
+void atomic_insert_new_process(int pid, time_t starttime)
 { 
 	pthread_mutex_lock(&list_mutex);	
 	insert_new_process(children_list, pid, starttime); 
 	pthread_mutex_unlock(&list_mutex);	
 }
 
- void atomic_update_terminated_process(int pid, time_t endtime)
+void atomic_update_terminated_process(int pid, time_t endtime)
 { 
 	
 	pthread_mutex_lock(&list_mutex);
@@ -57,21 +53,7 @@ int can_fork = MAXPAR;            //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
 	pthread_mutex_unlock(&list_mutex);
 }
 
- void atomic_inc_children_count(void)
-{
-	pthread_mutex_lock(&children_count_mutex);	
-	++children_count;
-	pthread_mutex_unlock(&children_count_mutex);
-}
-
- void atomic_inc_waited_children(void)
-{
-	pthread_mutex_lock(&waited_children_mutex);
-	++waited_children;
-	pthread_mutex_unlock(&waited_children_mutex);
-}
-
- bool atomic_get_exit_called(void)
+bool atomic_get_exit_called(void)
 {
 	pthread_mutex_lock(&exit_called_mutex);
 	bool exit_called_l = exit_called;
@@ -86,25 +68,26 @@ static void atomic_set_exit_called(bool b)
 	pthread_mutex_unlock(&exit_called_mutex);	
 }
 
+/** WARNING:
+  * ALL FOLLOWING INLINE FUNCTIONS MAY ONLY BE CALLED 
+  *	IF CALLING FUNCTION HAS LOCKED MUTEX "CHILDREN_MUTEX" BEFORE CALLING.*/ 
+
+inline bool fork_slot_avaliable(void) 
+{ return forked_children - waited_children <= MAXPAR; }
+
+inline bool wait_slot_avaliable(void)
+{ return forked_children != waited_children; }
+
+inline void inc_waited_children(void) { ++waited_children; }
+
+inline void inc_forked_children(void) { ++forked_children; }
+
 
 int main(int argc, char* argv[]) 
 {	
 	children_list = lst_new(); // initialized here due to function call
 
-	pthread_mutex_init(&children_count_mutex, NULL);
-	pthread_mutex_init(&waited_children_mutex, NULL);
-	pthread_mutex_init(&exit_called_mutex, NULL);
-	pthread_mutex_init(&list_mutex, NULL);
-
-	pthread_mutex_init(&fork_mutex, NULL);  				//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX init do mutex do fork
-
 	char* argv_child[CHILD_ARGV_SIZE]; // argv passed to forked child. 
-
-	//sem_init(&can_fork, 0, MAXPAR);	// args: semaphore, mode, count	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
-
-	pthread_cond_init(&fork_cond, NULL);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX init da var condicao
-
-	sem_init(&can_wait, 0, 0); //ditto
 
 	if (pthread_create(&thread_monitor, NULL, monitor, NULL)) // multi-threading starts here
 		perror("par-shell: Couldn't create monitoring thread. Will not be able to monitor and wait for children.");
@@ -120,33 +103,30 @@ int main(int argc, char* argv[])
 			case 0: continue;
 		}
 
-		if (!strcmp(argv_child[0], "exit")) // user asks to exit
-		{	
-	
-			sem_post(&can_wait);
-			
-			atomic_set_exit_called(true);
+		if (!strcmp(argv_child[0], "exit")) { //user asks to exit	
+
+			atomic_set_exit_called(true); 
 
 			if (pthread_join(thread_monitor, NULL))
 				perror("par-shell: couldn't join with monitor thread");
 
 			break;
-		}
+		
+		} else par_run(argv_child);
 
-		else par_run(argv_child);
 	}
 
+	//cleanup
 	lst_print(children_list); 
-	lst_destroy(children_list);		
-	pthread_mutex_destroy(&children_count_mutex);
-	pthread_mutex_destroy(&waited_children_mutex);
+
+	lst_destroy(children_list);
+		
 	pthread_mutex_destroy(&exit_called_mutex);
 	pthread_mutex_destroy(&list_mutex);
-	pthread_mutex_destroy(&fork_mutex);  //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX destroy do mutex do fork
-	pthread_cond_destroy(&fork_cond);    //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX  ""    ""    ""  da var condicao
-	//sem_destroy(&can_fork);	     //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
-	sem_destroy(&can_wait);
+	pthread_mutex_destroy(&children_mutex);
 
-	return EXIT_SUCCESS;
-	
+	pthread_cond_destroy(&can_fork);
+	pthread_cond_destroy(&can_wait);
+
+	return EXIT_SUCCESS;	
 }

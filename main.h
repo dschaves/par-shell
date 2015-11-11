@@ -2,27 +2,22 @@
 #define PARSHELL_MAIN_H
 
 #include <stdbool.h>
-#define MAXPAR 8
 
-/* can_fork: semaphore indicating being able to fork more children 
- * can_wait: semaphore indicating there are unwaited children
- */
-//extern sem_t can_fork;		//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX legacy
-extern pthread_cond_t fork_cond;	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao da var condicao
-extern int can_fork;			//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao da condicao em si
-extern sem_t can_wait;
-extern pthread_mutex_t fork_mutex;	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX declaracao do mutex
+extern pthread_cond_t can_fork;
+extern pthread_cond_t can_wait;
 
-/* The following is an atomic API with setters and getters
- * for the static global variables defined in main.c.
- * Mutual exclusion is guaranteed.
- */
+/** WARNING:
+ *  below mutex must always be locked before... */
+extern pthread_mutex_t children_mutex;
+//...calling these functions:
+inline void inc_waited_children(void);
+inline void inc_forked_children(void);
+inline bool fork_slot_avaliable(void);
+inline bool wait_slot_avaliable(void);
+// end WARNING
 
-/*increments total forked children*/
-void atomic_inc_children_count(void);
-
-/*increments total waited on children*/
-void atomic_inc_waited_children(void);
+/* Unlike the ones above, all following functions automatically
+ *  guarantee mutual exclusion when called. */
 
 /*checks whether exit was called*/
 bool atomic_get_exit_called(void); 

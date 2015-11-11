@@ -1,21 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <semaphore.h>
-#include <pthread.h> //XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX e necessario aqui tambem
+#include <pthread.h>
 
 #include "par_run.h" // self
-#include "main.h" // children_list, children_count, can_fork
+#include "main.h" // children_list, children_count, can_fork, can_wait
 #include "list.h" // insert_new_process
 
 
 void par_run(char* argVector[]) 
 {
-	pthread_mutex_lock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-	while (can_fork == 0) pthread_cond_wait(&fork_cond,&fork_mutex);	//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-	can_fork--;								//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-	//sem_wait(&can_fork);							//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-	pthread_mutex_unlock(&fork_mutex);					//XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+	pthread_mutex_lock(&children_mutex);
+				
+	while (!fork_slot_avaliable()) 
+		pthread_cond_wait(&can_fork, &children_mutex);
 
 	pid_t pid = fork();
 
@@ -36,10 +34,11 @@ void par_run(char* argVector[])
 
 	else // is parent; if child is created successfully
 	{
-		atomic_inc_children_count();
-		atomic_insert_new_process(pid, time(NULL));
-		sem_post(&can_wait);
+		atomic_insert_new_process(pid, time(NULL));		
+		inc_forked_children();
+		pthread_cond_signal(&can_wait);
 	}
-
+	
+	pthread_mutex_unlock(&children_mutex);	
 }
 

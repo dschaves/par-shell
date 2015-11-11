@@ -26,3 +26,9 @@ fibonacci: fibonacci.c
 
 remove: 
 	rm par-shell fibonacci
+
+test: par-test.sh fibonacci par-shell
+	./par-test.sh
+
+delete:
+	rm fibonacci par-shell
