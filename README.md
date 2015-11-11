@@ -2,5 +2,5 @@
 (JPB trademark)
 
 # SO1
-Sistemas Operativos, entrega 2!
+Sistemas Operativos, entrega 4!
 Agora com 50% mais paralelismo.
