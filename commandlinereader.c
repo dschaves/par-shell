@@ -27,8 +27,8 @@ int readLineArguments(char **argVector, int vectorSize)
   int numtokens = 0;
   char *s = " \n\t";
 
-  char *str = NULL;
-  size_t size = 0;
+  static char *str = NULL;
+  static size_t size = 0;
   int i;
 
   char *token;
