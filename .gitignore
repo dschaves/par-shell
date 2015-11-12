@@ -5,4 +5,4 @@ fibonacci
 test*
 *.in
 *.out
-
+*~
