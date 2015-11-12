@@ -4,10 +4,12 @@
 >test.out
 
 for n in {0..100}; do
-	echo fibonacci $(($RANDOM%2000)) >> test.in
+	echo fibonacci $RANDOM  >> test.in
 done
 
 echo "exit" >> test.in
+
+echo "starting par-shell now"
 
 ./par-shell < test.in  | tee test.out
 

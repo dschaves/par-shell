@@ -78,7 +78,7 @@ inline bool fork_slot_avaliable(void)
 inline bool wait_slot_avaliable(void)
 { return forked_children > waited_children; }
 
-inline void atomic_inc_waited_children(void) 
+inline void atomic inc_waited_children(void) 
 { 
 	pthread_mutex_lock(&children_mutex);		
 	++waited_children;

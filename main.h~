@@ -7,9 +7,9 @@ extern pthread_cond_t can_fork;
 extern pthread_cond_t can_wait;
 
 /** WARNING:
- *  below mutex must NEVER be locked before... */
+ *  below mutex must always be locked before... */
 extern pthread_mutex_t children_mutex;
-//...calling these functions.
+//...calling these functions:
 inline void atomic_inc_waited_children(void);
 inline void atomic_inc_forked_children(void);
 inline bool fork_slot_avaliable(void);

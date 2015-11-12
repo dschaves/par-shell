@@ -27,7 +27,6 @@ void* monitor(void* _)
 
 		pthread_mutex_unlock(&children_mutex);
 
-
 		pid = wait(NULL); // XXX: waits for next child to terminate
 
 		time(&endtime);
