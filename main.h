@@ -19,9 +19,6 @@ inline bool wait_slot_avaliable(void);
 /* Unlike the ones above, all following functions automatically
  *  guarantee mutual exclusion when called. */
 
-/*checks whether exit was called*/
-bool atomic_get_exit_called(void); 
-
 /*new node into list containing info about all children*/
 void atomic_insert_new_process(int pid, time_t starttime);
 

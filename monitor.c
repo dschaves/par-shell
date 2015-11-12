@@ -2,12 +2,22 @@
 #include <stdio.h> // perror()
 #include <sys/wait.h> // wait()
 #include <pthread.h> 
+#include <signal.h>
 
 #include "main.h" // exit_called, main_mutex, children_list, waited_children, children_count
 #include "monitor.h" // self
 
+static int exit_called = 0;
+
+static void handle_SIGTERM(int signo) 
+{ 
+	exit_called = 1; 
+	pthread_cond_signal(&can_wait);
+}
+
 void* monitor(void* _)
 {
+	signal(SIGTERM, handle_SIGTERM);
 
 	time_t endtime;
 
@@ -17,15 +27,12 @@ void* monitor(void* _)
 	{	
 		pthread_mutex_lock(&children_mutex);
 
-		if (atomic_get_exit_called() && !wait_slot_avaliable()) 
-		/* Only breaks if exit has been input AND there are no more children to be waited on. */
-		{
-			pthread_mutex_unlock(&children_mutex);
-			break;
+		while (!wait_slot_avaliable())
+		{ 
+			if (exit_called) goto exit;
+				 
+			else pthread_cond_wait(&can_wait, &children_mutex);
 		}
-
-		while (!wait_slot_avaliable()) 
-			pthread_cond_wait(&can_wait, &children_mutex);
 
 		pid = wait(NULL); // XXX: waits for next child to terminate
 
@@ -43,8 +50,10 @@ void* monitor(void* _)
 			inc_waited_children();
 			pthread_cond_signal(&can_fork);	
 		}
-
-		pthread_mutex_unlock(&children_mutex);
 	}
-	return NULL;
+		exit: return NULL;
 }
+
+
+
+
