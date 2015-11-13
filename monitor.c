@@ -51,7 +51,7 @@ void* monitor(void* _log_file)
 
 			total_time += process_time;	
 
-			fprintf(log_file, "iteracao %d\npid: %d execution time: %d s\ntotal execution time: %d s\n", ++iteration_count, pid, (int) process_time, (int) total_time);
+			fprintf(log_file, "iteracao %d\npid: %d execution time: %d s\ntotal execution time: %d s\n", iteration_count++, pid, (int) process_time, (int) total_time);
 			
 		}
 
