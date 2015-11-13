@@ -5,7 +5,6 @@
 
 #include "par_run.h" // self
 #include "main.h" // children_list, children_count, can_fork, can_wait
-#include "list.h" // insert_new_process
 
 
 void par_run(char* argVector[]) 

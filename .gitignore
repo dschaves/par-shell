@@ -6,3 +6,6 @@ test*
 *.in
 *.out
 *~
+*.gz
+*.zip
+*.tar

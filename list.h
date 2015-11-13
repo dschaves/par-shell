@@ -39,4 +39,7 @@ void update_terminated_process(list_t *list, int pid, time_t endtime);
 /* lst_print - print the content of list 'list' to standard output */
 void lst_print(list_t *list);
 
+/* gets total execution time of given pid */
+time_t get_process_time(list_t *list, int pid);	 
+
 #endif 

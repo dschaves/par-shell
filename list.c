@@ -32,6 +32,15 @@ void lst_destroy(list_t *list)
 	free(list);
 }
 
+time_t get_process_time(list_t *list, int pid)
+{
+	lst_iitem_t *item;
+	item = list->first;
+	while(item->pid != pid){
+		item = item->next;	
+	}	   
+	return item->endtime - item->starttime;
+}				 
 
 void insert_new_process(list_t *list, int pid, time_t starttime)
 {
@@ -62,7 +71,7 @@ void lst_print(list_t *list)
 	int totaltime;
 
 	item = list->first;
-	while (item != NULL){
+	while (item != NULL) {
 		totaltime = item->endtime - item->starttime;
 		printf("Process %d finished with execution time: %d s\n", item->pid, totaltime);
 		item = item->next;

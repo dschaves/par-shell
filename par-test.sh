@@ -11,6 +11,6 @@ echo "exit" >> test.in
 
 echo "starting par-shell now"
 
-./par-shell < test.in  | tee test.out
+./par-shell < test.in
 
 echo "Output lines:" $(wc -l test.out)

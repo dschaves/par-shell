@@ -6,11 +6,11 @@
 #include "main.h" // exit_called, main_mutex, children_list, waited_children, children_count
 #include "monitor.h" // self
 
-void* monitor(void* _)
+void* monitor(void* _log_file)
 {
 
+	FILE* log_file = (FILE*) _log_file;	
 	time_t endtime;
-
 	pid_t pid;
 
 	for(;;) {	
@@ -19,8 +19,11 @@ void* monitor(void* _)
 
 		while (!wait_slot_avaliable()) {
 
-			if (atomic_get_exit_called()) 
-				{ pthread_mutex_unlock(&children_mutex); goto exit; }
+			if (atomic_get_exit_called()) {
+
+				pthread_mutex_unlock(&children_mutex); 
+				goto exit; 
+			}
 			
 			pthread_cond_wait(&can_wait, &children_mutex);
 		}		
@@ -41,7 +44,15 @@ void* monitor(void* _)
 		else {
 			atomic_update_terminated_process(pid, endtime);
 			atomic_inc_waited_children();
-			pthread_cond_signal(&can_fork);	
+
+			pthread_cond_signal(&can_fork);
+
+			unsigned int process_time = atomic_get_process_time(pid);
+
+			total_time += process_time;	
+
+			fprintf(log_file, "iteracao %d\npid: %d execution time: %d s\ntotal execution time: %d s\n", ++iteration_count, pid, (int) process_time, (int) total_time);
+			
 		}
 
 	}
