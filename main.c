@@ -1,9 +1,9 @@
 #include <stdio.h> // getline()
 #include <string.h> // strcmp(), puts()
+#include <unistd.h>
 
 #include "list.h"
 #include "par_sync.h"
-#include "unistd.h"
 
 #define CHILD_ARGV_SIZE 7
 #define BUFFER_SIZE 128
@@ -83,13 +83,13 @@ void par_run(char* argVector[])
 		        exit(EXIT_FAILURE);
 		        
 		 /* Is parent (par-shell, main): */
-		default: signal_child_fork(pid, time(NULL));
+		default: regist_fork(pid, time(NULL));	
+	}
 }
 
 int main(int argc, char* argv[]) 
 {	
 	char* child_argv[CHILD_ARGV_SIZE];
-        pthread_t thread_monitor;
         
         list_t* children_list = lst_new();
        

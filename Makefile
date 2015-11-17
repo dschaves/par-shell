@@ -1,13 +1,16 @@
 # Makefile
 
 par-shell: main.o par_wait.o list.o 
-	gcc -pthread -g -o par-shell par_run.o main.o par_wait.o list.o 
+	gcc -pthread -g -o par-shell main.o par_sync.o par_wait.o list.o
 
-main.o: main.c par_wait.h list.h
-	gcc -pthread -Wall -g -c main.c
+main.o: main.c par_wait.h par_sync.h list.h
+	gcc -pthread -Wall -g -c -o main.o main.c
 
-par_wait.o: par_wait.c par_wait.h list.h
-	gcc -pthread -Wall -g -c par_wait.c
+par_sync.o: par_sync.c par_wait.h par_sync.h list.h
+	gcc -pthread -Wall -g -c -o par_sync.o par_sync.c
+
+par_wait.o: par_wait.c par_wait.h par_sync.h
+	gcc -pthread -Wall -g -c -o par_sync.o par_wait.c
 
 list.o: list.c list.h
 	gcc -pthread -Wall -g -c list.c

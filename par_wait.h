@@ -1,6 +1,6 @@
 #ifndef MONITOR_H
 #define MONITOR_H
 
-void* monitor(void*);
+void* par_wait(void*);
 
 #endif

@@ -1,18 +1,20 @@
-#ifndef PARSHELL_MAIN_H
-#define PARSHELL_MAIN_H
+#ifndef PARSHELL_SYNC
+#define PARSHELL_SYNC
 
 #include <stdbool.h>
-
-inline void atomic_inc_waited_children(void);
-inline void atomic_inc_forked_children(void);
+#include "list.h"
 
 bool exit_called(void);
+
+void regist_wait(int pid, time_t endtime);
+
+void regist_fork(int pid, time_t starttime);
 
 void set_exit_called(void);
 
 time_t get_finish_time(int pid);
 
-pid_t par_wait(int* status);
+void* par_wait(void*);
 
 pid_t synced_wait(int* status);
 
