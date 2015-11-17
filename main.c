@@ -1,163 +1,118 @@
 #include <stdio.h> // getline()
-#include <string.h> // strcmp()
-#include <pthread.h> // all
-#include <signal.h>
+#include <string.h> // strcmp(), puts()
 
-#include "commandlinereader.h"
-#include "par_run.h"
-#include "monitor.h"
 #include "list.h"
-#include "main.h"
+#include "par_sync.h"
+#include "unistd.h"
 
 #define CHILD_ARGV_SIZE 7
 #define BUFFER_SIZE 128
+#define MSG_PROMPT "Par-shell now ready. Does not wait for jobs to exit!"
 
-//*********** BEGIN GLOBAL VARIABLES ***********/
-static list_t* children_list; // initialized in main
-static unsigned int forked_children = 0; // counts all children successfully forked
-static unsigned int waited_children = 0; // counts all children succesffully waited on
-static const unsigned int MAXPAR = 8; 
-static bool exit_called = false;
-static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t exit_called_mutex = PTHREAD_MUTEX_INITIALIZER;
-// End file-global variables
+/* get_child_argv:
+Reads up to 'vectorSize' space-separated arguments from the standard input
+and saves them in the entries of the 'argVector' argument.
+This function returns once enough arguments are read or the end of the line 
+is reached
 
-// Begin global variables
-unsigned int iteration_count = 0;
-time_t total_time = 0;
-pthread_mutex_t children_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t can_fork = PTHREAD_COND_INITIALIZER;
-pthread_cond_t can_wait = PTHREAD_COND_INITIALIZER;
-//*********** END GLOBAL VARIABLES ***********/
+Arguments: 
+ 'argVector' should be a vector of char* previously allocated with
+ as many entries as 'vectorSize'
+ 'vectorSize' is the size of the above vector. A vector of size N allows up to 
+ N-1 arguments to be read; the entry after the last argument is set to NULL.
+ 'buffer' is a buffer with 'buffersize' bytes, which will be 
+ used to hold the strings of each argument.  
 
-/* Atomic getters and setters. 
- * Mutual exclusion is guaranteed.
- */
-
-bool atomic_get_exit_called(void)
+Return value:
+ The number of arguments that were read; -1 if some error occurred; 
+ -2 if the first token input is "exit."
+*/
+int get_child_argv(char* argVector[], int vectorSize)
 {
-	pthread_mutex_lock(&exit_called_mutex);
-	bool exit_called_l = exit_called;
-	pthread_mutex_unlock(&exit_called_mutex);
-	return exit_called_l;
+  static char buffer[BUFFER_SIZE]; 
+  
+  int numtokens = 0;
+  char *s = " \r\n\t";
+
+  int i;
+
+  char *token;
+
+  if (argVector == NULL || vectorSize == 0 || BUFFER_SIZE == 0)
+    return 0;
+
+  if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
+    return -1;
+   
+  /* get the first token */
+  token = strtok(buffer, s);
+  
+  if (!strcmp(token, "exit")) return -2; 
+  
+  /* walk through other tokens */
+  while( numtokens < vectorSize-1 && token != NULL ) {
+  
+    argVector[numtokens] = token;
+    numtokens ++;
+    
+    token = strtok(NULL, s);
+  }
+   
+  for (i = numtokens; i<vectorSize; i++)
+    argVector[i] = NULL;
+   
+  return numtokens;
 }
 
-static void atomic_set_exit_called(bool b)
+void par_run(char* argVector[]) 
 {
-	pthread_mutex_lock(&exit_called_mutex);	
-	exit_called = b;
-	pthread_mutex_unlock(&exit_called_mutex);	
-}
+	pid_t pid = synced_fork();
 
-void atomic_insert_new_process(int pid, time_t starttime)
-{ 
-	pthread_mutex_lock(&list_mutex);	
-	insert_new_process(children_list, pid, starttime); 
-	pthread_mutex_unlock(&list_mutex);	
-}
+        switch (pid) {
+        
+                case -1: perror("par-shell: unable to fork"); break;
+                
+                case 0: /* Is forked child: */
+                        execv(argVector[0], argVector);
 
-void atomic_update_terminated_process(int pid, time_t endtime)
-{ 
-	
-	pthread_mutex_lock(&list_mutex);
-	update_terminated_process(children_list, pid, endtime);
-	pthread_mutex_unlock(&list_mutex);
-}
+		        if (argVector[0][0] != '/')		
+			execvp(argVector[0], argVector);
 
-time_t atomic_get_process_time(int pid)
-{ 
-	pthread_mutex_lock(&list_mutex);
-	time_t process_time = get_process_time(children_list, pid);
-	pthread_mutex_unlock(&list_mutex);
-	return process_time;
-}
-
-/** WARNING:
-  * ALL FOLLOWING INLINE FUNCTIONS MAY ONLY BE CALLED 
-  *	IF CALLING FUNCTION -HAS NOT- LOCKED MUTEX "CHILDREN_MUTEX" BEFORE CALLING.*/ 
-
-inline bool fork_slot_avaliable(void) 
-{ return forked_children - waited_children < MAXPAR; }
-
-inline bool wait_slot_avaliable(void)
-{ return forked_children > waited_children; }
-
-/** WARNING:
-  * ALL FOLLOWING INLINE FUNCTIONS MAY ONLY BE CALLED 
-  *	IF CALLING FUNCTION -HAS- LOCKED MUTEX "CHILDREN_MUTEX" BEFORE CALLING.*/ 
-
-inline void atomic_inc_waited_children(void) 
-{ 
-	pthread_mutex_lock(&children_mutex);		
-	++waited_children;
-	pthread_mutex_unlock(&children_mutex);	
-}
-
-inline void atomic_inc_forked_children(void)
-{ 
-	pthread_mutex_lock(&children_mutex);
-	++forked_children; 
-	pthread_mutex_unlock(&children_mutex);	
+		        // next line only reached if execv fails.
+		        perror("par-shell: exec failed");
+		        exit(EXIT_FAILURE);
+		        
+		 /* Is parent (par-shell, main): */
+		default: signal_child_fork(pid, time(NULL));
 }
 
 int main(int argc, char* argv[]) 
 {	
-	children_list = lst_new(); // initialized here due to function call
+	char* child_argv[CHILD_ARGV_SIZE];
+        pthread_t thread_monitor;
+        
+        list_t* children_list = lst_new();
+       
+        threading_init(children_list);
 
-	FILE* log_file = fopen("log.txt", "a+");
-
-	char first_line[BUFFER_SIZE];
-	char third_line[BUFFER_SIZE];
-	unsigned int prev_iter = 0;
-	unsigned int prev_time = 0;
-
-	while (fgets(first_line, BUFFER_SIZE, log_file))
-	{
-		while (fgetc(log_file) != '\n');
-		fgets(third_line, BUFFER_SIZE, log_file);
-	}
-
-	sscanf(first_line, "iteracao %u ", &prev_iter); 
-	sscanf(third_line, "total execution time: %u", &prev_time); 
+        puts(MSG_PROMPT); 
 	
-	total_time += prev_time;
-	iteration_count += prev_iter;
-
-	pthread_t thread_monitor;
-	if (pthread_create(&thread_monitor, NULL, monitor, log_file)) // multi-threading starts here
-		perror("par-shell: Couldn't create monitoring thread. Will not be able to monitor and wait for children.");
-
-	char* argv_child[CHILD_ARGV_SIZE]; // argv passed to forked child. 
-	char input[BUFFER_SIZE];
-
-	printf("Par-shell now ready. Does not wait for jobs to exit!\n>>> "); 
-	for(;;) // breaks upon "exit" input
-	{
-
-		switch (readLineArguments(argv_child, CHILD_ARGV_SIZE, input, BUFFER_SIZE)) 
-		{
-			case -1: fputs("\npar-shell: couldn't read input. Retrying.\n", stderr);
-			case 0: continue;
-		}
-
-		if (!strcmp(argv_child[0], "exit")) break;	
-
-		else par_run(argv_child);
+	/** The interaction with the user and  command execution happens next. 
+	  * This is the shell's main part.*/
+	while (!exit_called()) { 
+	
+	        switch (get_child_argv(child_argv, CHILD_ARGV_SIZE)) {
+	       
+	                case -2: set_exit_called(); break;
+		        case -1: fputs("\npar-shell: couldn't read input. Retrying.\n", stderr);
+		        case 0: continue;
+		        default: par_run(child_argv);
+                }	
 	}
-
-	atomic_set_exit_called(true);
-	pthread_cond_signal(&can_wait);
-
-	if (pthread_join(thread_monitor, NULL))
-		perror("par-shell: couldn't join with monitor thread");
-
-	lst_print(children_list); 
-	fclose(log_file); 
+	
+        threading_cleanup();
+        lst_print(children_list);
 	lst_destroy(children_list);
-	pthread_mutex_destroy(&list_mutex);
-	pthread_mutex_destroy(&children_mutex);
-	pthread_cond_destroy(&can_fork);
-	pthread_cond_destroy(&can_wait);
 
 	return EXIT_SUCCESS;	
 }
