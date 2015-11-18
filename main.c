@@ -5,9 +5,20 @@
 #include "list.h"
 #include "par_sync.h"
 
-#define CHILD_ARGV_SIZE 7
-#define BUFFER_SIZE 128
 #define MSG_PROMPT "Par-shell now ready. Does not wait for jobs to exit!"
+#define EMSG_INPUT "\npar-shell: couldn't read input. Retrying.\n"
+
+
+#define INPUT_SIZE 128
+#define CHILD_ARGV_SIZE 7
+
+char* get_input(void)
+{               
+        static char input[INPUT_SIZE];
+        fgets(input, INPUT_SIZE, stdin);
+        return input;
+}
+
 
 /* get_child_argv:
 Reads up to 'vectorSize' space-separated arguments from the standard input
@@ -27,42 +38,30 @@ Return value:
  The number of arguments that were read; -1 if some error occurred; 
  -2 if the first token input is "exit."
 */
-int get_child_argv(char* argVector[], int vectorSize)
+int get_child_argv(char* argv[], size_t argv_size)
 {
-  static char buffer[BUFFER_SIZE]; 
-  
-  int numtokens = 0;
-  char *s = " \r\n\t";
 
-  int i;
+        char* token;				        /* cada token encontrado */
+        const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
+        unsigned int i, argc;               		/* indice do array */
+     
+        char* input = get_input();
+        /* Preencher o vector tokens com todos os tokens encontrados
+         * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
+	 */
+	token = strtok(input, delimiters); 		/* este token e o comando */ 
 
-  char *token;
+        for (i = argc = 0; i < argv_size; i++) {
+        
+                argv[i] = token; if (token == NULL) puts("EH CARALHO!");
+                if (token != NULL) argc++;
+                token = strtok(NULL, delimiters);
+        }
 
-  if (argVector == NULL || vectorSize == 0 || BUFFER_SIZE == 0)
-    return 0;
-
-  if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
-    return -1;
-   
-  /* get the first token */
-  token = strtok(buffer, s);
-  
-  if (!strcmp(token, "exit")) return -2; 
-  
-  /* walk through other tokens */
-  while( numtokens < vectorSize-1 && token != NULL ) {
-  
-    argVector[numtokens] = token;
-    numtokens ++;
-    
-    token = strtok(NULL, s);
-  }
-   
-  for (i = numtokens; i<vectorSize; i++)
-    argVector[i] = NULL;
-   
-  return numtokens;
+        return argc;
 }
+
+/* este programa do sézinho é lindo. é favor dar um 20.*/
 
 void par_run(char* argVector[]) 
 {
@@ -87,26 +86,32 @@ void par_run(char* argVector[])
 	}
 }
 
-int main(int argc, char* argv[]) 
-{	
+int main(void) 
+{	 
 	char* child_argv[CHILD_ARGV_SIZE];
         
         list_t* children_list = lst_new();
        
-        threading_init(children_list);
+        threading_init(children_list); /** NOTE: initiates multi-threading. */
 
         puts(MSG_PROMPT); 
 	
-	/** The interaction with the user and  command execution happens next. 
+	/** User interaction followed by command execution happens next,
+	  * in the while loop. 
 	  * This is the shell's main part.*/
+	  
 	while (!exit_called()) { 
 	
 	        switch (get_child_argv(child_argv, CHILD_ARGV_SIZE)) {
 	       
-	                case -2: set_exit_called(); break;
-		        case -1: fputs("\npar-shell: couldn't read input. Retrying.\n", stderr);
-		        case 0: continue;
-		        default: par_run(child_argv);
+	                case -2: 
+	                        set_exit_called(); break;
+	                case -1: 
+	                        fputs(EMSG_INPUT, stderr);
+		        case 0: 
+		               continue;
+		        default: 
+		                par_run(child_argv);
                 }	
 	}
 	

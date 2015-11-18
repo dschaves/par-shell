@@ -1,5 +1,5 @@
-#ifndef MONITOR_H
-#define MONITOR_H
+#ifndef PAR_WAIT_H
+#define PAR_WAIT_H
 
 void* par_wait(void*);
 

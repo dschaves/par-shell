@@ -1,9 +1,3 @@
 iteracao 0
-pid: 21077 execution time: 0 s
-total execution time: 0 s
-iteracao 1
-pid: 21078 execution time: 0 s
-total execution time: 0 s
-iteracao 2
-pid: 21080 execution time: 0 s
+pid: 8944 execution time: 0 s
 total execution time: 0 s

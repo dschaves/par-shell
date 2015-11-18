@@ -1,5 +1,5 @@
-#ifndef PARSHELL_SYNC
-#define PARSHELL_SYNC
+#ifndef PARSHELL_SYNC_H
+#define PARSHELL_SYNC_H
 
 #include <stdbool.h>
 #include "list.h"

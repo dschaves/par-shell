@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include <pthread.h>
 
 #include "list.h"
@@ -69,7 +70,7 @@ time_t get_finish_time(int pid)
 	return process_time;
 }
 
-#define NO_FORK_SLOT (forked_children - waited_children => MAXPAR)
+#define NO_FORK_SLOT (forked_children - waited_children >= MAXPAR)
 #define NO_WAIT_SLOT (forked_children <= waited_children)
 
 pid_t synced_wait(int* status) 
@@ -79,7 +80,6 @@ pid_t synced_wait(int* status)
 	while (NO_WAIT_SLOT) {
 	
 	        if (exit_called()) return -2;
-	        printf("\n>>> "); // print a nice prompt
 		pthread_cond_wait(&can_wait, &children_counters_mutex);
 	}
 	pthread_mutex_unlock(&children_counters_mutex);

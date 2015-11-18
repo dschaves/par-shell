@@ -9,7 +9,7 @@ static time_t total_time = 0;
 #define BUFFER_SIZE 128
 
 FILE* load_log_file(FILE* log_file)
-{
+{	
 	time_t prev_time = 0;
 	unsigned int prev_iter = 0;
 	
@@ -50,17 +50,19 @@ void* par_wait(void*_)
 	
 	FILE* log_file = fopen("log.txt", "a+");
 	
-	while (pid != -2 && !exit_called()) { // pid == -2 signals exit has been called	
+	while (!exit_called() && pid != -1) {
 
 		pid = synced_wait(NULL);
+		printf(">>> "); // print a nice prompt
 
 		if ((endtime = time(NULL)) == -1)
-		        perror("par-shell: [ERROR] couldn't get finish time for child.");
+		        perror("par-shell: couldn't get finish time for child");
 		
                 switch (pid) {
                 
-                case -1: perror("par-shell: [ERROR] couldn't wait on child");  
-                case -2: break;
+                case -1:
+                        if (exit_called()) break;
+                        perror("par-shell: couldn't wait on child");  
                 default:
                         regist_wait(pid, endtime); 
 			save_log_file(log_file, pid, get_finish_time(pid));
