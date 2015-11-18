@@ -1,6 +1,6 @@
 # Makefile for par-shell.
 
-CCFLAGS=-pthread -Wall -Wextra -g
+CCFLAGS=-pthread -Wall -g
 # Flags detailed:
 # pthread: enable multithreading
 # Wall: All warnings.

@@ -46,9 +46,11 @@ void regist_fork(int pid, time_t starttime)
 	insert_new_process(children_list, pid, starttime);
 	pthread_mutex_unlock(&list_mutex);
 
-	pthread_mutex_lock(&list_mutex);	
+	pthread_mutex_lock(&children_counters_mutex);	
 	++forked_children;
-	pthread_mutex_unlock(&list_mutex);	
+	pthread_mutex_unlock(&children_counters_mutex);
+	
+	pthread_cond_signal(&can_wait);	
 }
 
 void regist_wait(int pid, time_t endtime)
@@ -60,6 +62,8 @@ void regist_wait(int pid, time_t endtime)
 	pthread_mutex_lock(&children_counters_mutex);		
 	++waited_children;
 	pthread_mutex_unlock(&children_counters_mutex);
+	
+	pthread_cond_signal(&can_fork);
 }
 
 time_t get_finish_time(int pid)
@@ -71,14 +75,13 @@ time_t get_finish_time(int pid)
 }
 
 #define NO_FORK_SLOT (forked_children - waited_children >= MAXPAR)
-#define NO_WAIT_SLOT (forked_children <= waited_children)
+#define NO_WAIT_SLOT (forked_children == waited_children)
 
 pid_t synced_wait(int* status) 
 {
 	pthread_mutex_lock(&children_counters_mutex);
 
 	while (NO_WAIT_SLOT) {
-	
 	        if (exit_called()) return -2;
 		pthread_cond_wait(&can_wait, &children_counters_mutex);
 	}
@@ -89,11 +92,11 @@ pid_t synced_wait(int* status)
 
 pid_t synced_fork(void)
 {
-
 	pthread_mutex_lock(&children_counters_mutex);
 				
 	while (NO_FORK_SLOT) 
 		pthread_cond_wait(&can_fork, &children_counters_mutex);
+		
 	pthread_mutex_unlock(&children_counters_mutex);	
 
 	return fork();
@@ -109,11 +112,9 @@ void threading_init(list_t* _children_list)
        	} // multi-threading starts here
 }
 
-
 void threading_cleanup(void)
 {
         // pthread_join returns non-zero if it fails.
-        
         if (pthread_join(par_wait_thread, NULL))
 	        perror("par-shell: couldn't join with monitor thread");
 		
@@ -122,4 +123,12 @@ void threading_cleanup(void)
 	pthread_mutex_destroy(&exit_called_mutex);
 	pthread_cond_destroy(&can_fork);
 	pthread_cond_destroy(&can_wait);
+}
+
+void term_wait_thread(void)
+{
+        while (!NO_WAIT_SLOT)
+                pthread_wait_thread
+                
+        pthread_kill
 }

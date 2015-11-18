@@ -1,69 +1,86 @@
 #include <time.h> // time()
 #include <stdio.h> // perror()
+#include <signal.h>
 
 #include "par_wait.h" // self
 #include "par_sync.h"
 
-static unsigned int iteration_count = 0;
-static time_t total_time = 0;
+static unsigned int iteration_count;
+static time_t total_time;
+static exit_called = 0;
 #define BUFFER_SIZE 128
 
-FILE* load_log_file(FILE* log_file)
+void handle_sigint(int signo) { exit_called = 1; }
+
+static void read_log_file(FILE* log_file)
 {	
-	time_t prev_time = 0;
-	unsigned int prev_iter = 0;
+        printf("Reading log.txt... ");
+
+	if (fgetc(log_file) == EOF) {
 	
+	        puts("Log empty.");
+	        iteration_count = 0;
+	        total_time = 0;
+	        return;
+	}
+	
+	time_t prev_time;
+	unsigned int prev_iter;
 	char first_line[BUFFER_SIZE];
 	char third_line[BUFFER_SIZE];
-
+	
 	while (fgets(first_line, BUFFER_SIZE, log_file)) {
 	
-		while (fgetc(log_file) != '\n');
+		while (fgetc(log_file) != '\n'); // discard second line.
 		fgets(third_line, BUFFER_SIZE, log_file);
 	}
-
 	sscanf(first_line, "iteracao %u", &prev_iter); 
 	sscanf(third_line, "total execution time: %u", (unsigned int*) &prev_time);
 	
-	total_time += prev_time;
-	iteration_count += prev_iter;
-
-        return log_file;
+	total_time = prev_time;
+	iteration_count = prev_iter+1;
+	
+	printf("Previous iterations: %d; Previous time: %d\n", prev_iter, (int) prev_time);
 }
 
 
 
-void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
+static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
 {       
-        fprintf(log_file, "iteracao %d\npid: %d execution time: %d s\ntotal execution time: %d s\n", iteration_count, pid, (int) finish_time, (int) total_time);
-	fflush(log_file);
-	++iteration_count;
 	total_time += finish_time; 
+        fprintf(log_file, "iteracao %d\npid: %d execution time: %d s\ntotal execution time: %d s\n", iteration_count, pid, (int) finish_time, (int) total_time);
+        ++iteration_count;
+	fflush(log_file);
 }
 
 
 
 void* par_wait(void*_)
 {
+	signal(SIGTERM, handle_sigterm);
+	
 	pid_t pid;
 	time_t endtime;
 	
 	FILE* log_file = fopen("log.txt", "a+");
+
+        if (log_file == NULL) 
+                perror("Couldn't read log.txt. Continuing without logging.")
+	else 
+	        read_log_file(log_file);
 	
-	while (!exit_called() && pid != -1) {
+	while (pid != -2) {  
 
 		pid = synced_wait(NULL);
-		printf(">>> "); // print a nice prompt
-
+		
 		if ((endtime = time(NULL)) == -1)
 		        perror("par-shell: couldn't get finish time for child");
 		
-                switch (pid) {
-                
-                case -1:
-                        if (exit_called()) break;
-                        perror("par-shell: couldn't wait on child");  
-                default:
+                if (pid == 1) {
+                        perror("par-shell: couldn't wait on child");
+                        
+                } else if (pid != -2) {
+                        printf("== PID %u FINISHED ==\n", pid);
                         regist_wait(pid, endtime); 
 			save_log_file(log_file, pid, get_finish_time(pid));
                 }

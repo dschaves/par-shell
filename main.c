@@ -12,14 +12,6 @@
 #define INPUT_SIZE 128
 #define CHILD_ARGV_SIZE 7
 
-char* get_input(void)
-{               
-        static char input[INPUT_SIZE];
-        fgets(input, INPUT_SIZE, stdin);
-        return input;
-}
-
-
 /* get_child_argv:
 Reads up to 'vectorSize' space-separated arguments from the standard input
 and saves them in the entries of the 'argVector' argument.
@@ -27,8 +19,8 @@ This function returns once enough arguments are read or the end of the line
 is reached
 
 Arguments: 
- 'argVector' should be a vector of char* previously allocated with
- as many entries as 'vectorSize'
+ 'argv' should be a vector of char* previously allocated with
+ as many entries as 'argv_size'
  'vectorSize' is the size of the above vector. A vector of size N allows up to 
  N-1 arguments to be read; the entry after the last argument is set to NULL.
  'buffer' is a buffer with 'buffersize' bytes, which will be 
@@ -41,22 +33,28 @@ Return value:
 int get_child_argv(char* argv[], size_t argv_size)
 {
 
-        char* token;				        /* cada token encontrado */
+        char* token;				        /* each 
         const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
-        unsigned int i, argc;               		/* indice do array */
+        int i, argc;                        		/* indice do array */
+        
+        static char input[INPUT_SIZE];
+        
+        fflush(stdout);
+        if (!fgets(input, INPUT_SIZE, stdin)) return 0;
      
-        char* input = get_input();
         /* Preencher o vector tokens com todos os tokens encontrados
          * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
 	 */
 	token = strtok(input, delimiters); 		/* este token e o comando */ 
+	
+	if (token != NULL && !strcmp(token, "exit")) return -2; 
 
-        for (i = argc = 0; i < argv_size; i++) {
-        
-                argv[i] = token; if (token == NULL) puts("EH CARALHO!");
-                if (token != NULL) argc++;
+        for (argc = 0; argc < argv_size && token != NULL; argc++) {
+                argv[argc] = token;
                 token = strtok(NULL, delimiters);
-        }
+        } 
+        
+        for (i = argc; i < argv_size; i++) argv[i] = NULL;
 
         return argc;
 }
@@ -94,11 +92,10 @@ int main(void)
        
         threading_init(children_list); /** NOTE: initiates multi-threading. */
 
-        puts(MSG_PROMPT); 
+        puts(MSG_PROMPT);
 	
-	/** User interaction followed by command execution happens next,
-	  * in the while loop. 
-	  * This is the shell's main part.*/
+	/** MAINLOOP:
+	  * The program's main logic is dictated next. */
 	  
 	while (!exit_called()) { 
 	
