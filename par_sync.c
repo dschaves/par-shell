@@ -124,11 +124,3 @@ void threading_cleanup(void)
 	pthread_cond_destroy(&can_fork);
 	pthread_cond_destroy(&can_wait);
 }
-
-void term_wait_thread(void)
-{
-        while (!NO_WAIT_SLOT)
-                pthread_wait_thread
-                
-        pthread_kill
-}

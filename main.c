@@ -33,9 +33,10 @@ Return value:
 int get_child_argv(char* argv[], size_t argv_size)
 {
 
-        char* token;				        /* each 
+        char* token;				        /* each read token from input. */
         const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
-        int i, argc;                        		/* indice do array */
+        int i, argc;                        		/* array index and
+                                                         * the number of arguments found.*/
         
         static char input[INPUT_SIZE];
         

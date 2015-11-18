@@ -1,16 +1,12 @@
 #include <time.h> // time()
 #include <stdio.h> // perror()
-#include <signal.h>
 
 #include "par_wait.h" // self
 #include "par_sync.h"
 
 static unsigned int iteration_count;
 static time_t total_time;
-static exit_called = 0;
 #define BUFFER_SIZE 128
-
-void handle_sigint(int signo) { exit_called = 1; }
 
 static void read_log_file(FILE* log_file)
 {	
@@ -22,7 +18,8 @@ static void read_log_file(FILE* log_file)
 	        iteration_count = 0;
 	        total_time = 0;
 	        return;
-	}
+	        
+	} ungetc('i', log_file);
 	
 	time_t prev_time;
 	unsigned int prev_iter;
@@ -40,7 +37,7 @@ static void read_log_file(FILE* log_file)
 	total_time = prev_time;
 	iteration_count = prev_iter+1;
 	
-	printf("Previous iterations: %d; Previous time: %d\n", prev_iter, (int) prev_time);
+	printf("Previous iterations: %d. Previous time: %d s\n", iteration_count, (int) prev_time);
 }
 
 
@@ -57,15 +54,13 @@ static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
 
 void* par_wait(void*_)
 {
-	signal(SIGTERM, handle_sigterm);
-	
 	pid_t pid;
 	time_t endtime;
 	
 	FILE* log_file = fopen("log.txt", "a+");
 
         if (log_file == NULL) 
-                perror("Couldn't read log.txt. Continuing without logging.")
+                perror("Couldn't read log.txt. Continuing without logging.");
 	else 
 	        read_log_file(log_file);
 	
