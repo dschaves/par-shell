@@ -4,7 +4,6 @@ CCFLAGS=-pthread -Wall -g
 # Flags detailed:
 # pthread: enable multithreading
 # Wall: All warnings.
-# Wall: Extra warnings.
 # g: enable debugging symbols
 
 par-shell: list.o par_sync.o par_wait.o main.o 
