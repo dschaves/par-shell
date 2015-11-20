@@ -73,15 +73,15 @@ void par_run(char* argVector[])
                 case 0: /* Is forked child: */
                         execv(argVector[0], argVector);
 
-		        if (argVector[0][0] != '/')		
+		        if (argVector[0][0] != '/')
 			execvp(argVector[0], argVector);
 
 		        // next line only reached if execv fails.
 		        perror("par-shell: exec failed");
-		        exit(EXIT_FAILURE);
+		        _exit(EXIT_FAILURE); // better way of exiting.
 		        
 		 /* Is parent (par-shell, main): */
-		default: regist_fork(pid, time(NULL));	
+		default: regist_fork(pid, time(NULL));
 	}
 }
 
