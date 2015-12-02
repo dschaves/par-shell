@@ -2,15 +2,14 @@
 #include <string.h> // strcmp(), puts()
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "list.h"
 #include "par_sync.h"
 
 #define MSG_PROMPT "Par-shell now ready. Does not wait for jobs to exit!"
-#define EMSG_INPUT "\npar-shell: couldn't read input. Retrying.\n"
 
-
-#define INPUT_SIZE 128
 #define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
 
@@ -32,35 +31,6 @@ Return value:
  The number of arguments that were read; -1 if some error occurred; 
  -2 if the first token input is "exit."
 */
-int get_child_argv(char* argv[], size_t argv_size)
-{
-
-        char* token;				        /* each read token from input. */
-        const char delimiters[] =" \t\n";		/* caracteres que acabam strtok */
-        int i, argc;                        		/* array index and
-                                                         * the number of arguments found.*/
-        
-        static char input[INPUT_SIZE];
-        
-        fflush(stdout);
-        if (!fgets(input, INPUT_SIZE, stdin)) return 0;
-     
-        /* Preencher o vector tokens com todos os tokens encontrados
-         * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
-	 */
-	token = strtok(input, delimiters); 		/* este token e o comando */ 
-	
-	if (token != NULL && !strcmp(token, "exit")) return -2; 
-
-        for (argc = 0; argc < argv_size && token != NULL; argc++) {
-                argv[argc] = token;
-                token = strtok(NULL, delimiters);
-        } 
-        
-        for (i = argc; i < argv_size; i++) argv[i] = NULL;
-
-        return argc;
-}
 
 /* este programa do sézinho é lindo. é favor dar um 20.*/
 
@@ -69,35 +39,39 @@ void par_run(char* argVector[])
 	pid_t pid = synced_fork();
 
 	char filename[BUFFER_SIZE];
-
+	
         switch (pid) {
-        
-                case -1: perror("par-shell: unable to fork"); break;
                 
-                case 0: /* Is forked child: */
-
-			sprintf(filename, "par-shell-out-%d.txt", getpid());
+                /* Is forked child: */  
+                case 0: sprintf(filename, "par-shell-out-%d.txt", getpid());
 			int output_file = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
 			dup2(output_file, STDOUT_FILENO);
 			close(output_file);
 
                         execv(argVector[0], argVector);
 
-		        if (argVector[0][0] != '/')
+		        if (argVector[0][0] != '/') 
 			execvp(argVector[0], argVector);
 
 		        // next line only reached if execv fails.
 		        perror("par-shell: exec failed");
 		        _exit(EXIT_FAILURE); // better way of exiting.
 		        
-		 /* Is parent (par-shell, main): */
+		/* Is parent (par-shell, main): */
+                case -1: perror("par-shell: unable to fork"); break;
 		default: regist_fork(pid, time(NULL));
 	}
+}
+
+void listen_for_argv(int fifo, char* child_argv[])
+{
+        read(fifo, child_argv, BUFFER_SIZE);
 }
 
 int main(void) 
 {	 
 	char* child_argv[CHILD_ARGV_SIZE];
+        int fifo = mkfifo("/tmp/par-shell", S_IWUSR | S_IRUSR);
         
         list_t* children_list = lst_new();
        
@@ -107,20 +81,9 @@ int main(void)
 	
 	/** MAINLOOP:
 	  * The program's main logic is dictated next. */
-	  
-	while (!exit_called()) { 
-	
-	        switch (get_child_argv(child_argv, CHILD_ARGV_SIZE)) {
-	       
-	                case -2: 
-	                        set_exit_called(); break;
-	                case -1: 
-	                        fputs(EMSG_INPUT, stderr);
-		        case 0: 
-		               continue;
-		        default: 
-		                par_run(child_argv);
-                }	
+        //TODO!
+        while(!exit_called()) {
+	        listen_for_argv(fifo, child_argv);
 	}
 	
         threading_cleanup();
@@ -129,3 +92,5 @@ int main(void)
 
 	return EXIT_SUCCESS;	
 }
+
+

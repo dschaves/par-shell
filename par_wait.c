@@ -10,7 +10,7 @@ static time_t total_time;
 
 static void read_log_file(FILE* log_file)
 {	
-        printf("Reading log.txt... ");
+        printf("Reading log.txt: ");
 
 	if (fgetc(log_file) == EOF) {
 	
