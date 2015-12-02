@@ -1,6 +1,7 @@
 #include <stdio.h> // getline()
 #include <string.h> // strcmp(), puts()
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "list.h"
 #include "par_sync.h"
@@ -10,6 +11,7 @@
 
 
 #define INPUT_SIZE 128
+#define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
 
 /* get_child_argv:
@@ -66,11 +68,19 @@ void par_run(char* argVector[])
 {
 	pid_t pid = synced_fork();
 
+	char filename[BUFFER_SIZE];
+
         switch (pid) {
         
                 case -1: perror("par-shell: unable to fork"); break;
                 
                 case 0: /* Is forked child: */
+
+			sprintf(filename, "par-shell-out-%d.txt", getpid());
+			int output_file = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+			dup2(output_file, STDOUT_FILENO);
+			close(output_file);
+
                         execv(argVector[0], argVector);
 
 		        if (argVector[0][0] != '/')
