@@ -9,8 +9,9 @@
 
 #define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
-#define PIPE_DIR /tmp/par-shell
+#define PIPE_DIR /tmp/par-shell 
 #define EMSG_INPUT "\npar-shell: couldn't read input. Retrying.\n"
+
 
 int get_child_argv(char* argv[], size_t argv_size)
 {
@@ -20,16 +21,12 @@ int get_child_argv(char* argv[], size_t argv_size)
                                                          * the number of arguments found.*/
         static char input[BUFFER_SIZE];
         
-        fflush(stdout);
         if (!fgets(input, BUFFER_SIZE, stdin)) return 0;
      
-        /* Preencher o vector tokens com todos os tokens encontrados
-         * ate ultrapassar o tamanho do vector ou chegar a um NULL.    
-	 */
-	token = strtok(input, delimiters); 		/* este token e o comando */ 
-	
-	if (token != NULL && !strcmp(token, "exit")) return -2; 
+	token = strtok(input, delimiters); /* este token e o comando */ 
 
+        /* Preencher o vector argv com todos os tokens encontrados
+         * ate ultrapassar o tamanho do vector ou chegar a um NULL. */
         for (argc = 0; argc < argv_size && token != NULL; argc++) {
                 argv[argc] = token;
                 token = strtok(NULL, delimiters);
@@ -47,17 +44,16 @@ void par_req(char* commands[], int numtokens)
 
         for (i = 1; i < numtokens; i++)
                 write(pipe, commands[i], strlen(commands[i])+1);
-}
-
-void stat_command()
-{
-
+        
+        close(pipe);
 }
 
 int main()
 {
         char* child_argv[BUFFER_SIZE];
         int numtokens;
+        int in_pipe = open
+        int out_pipe = open()
 
 	while (!exit_called())
 	{

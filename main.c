@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/queue.h>
 
 #include "list.h"
 #include "par_sync.h"
@@ -12,6 +13,11 @@
 
 #define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
+#define EXIT_RETURN -2
+#define EXIT_STRING "exit"
+#define EXITGLOBAL_RETURN -3
+#define EXITGLOBAL_STRING "exit-global"
+#define eq_str(str1,str2) (!strcmp(str1,str2)) 
 
 /* get_child_argv:
 Reads up to 'vectorSize' space-separated arguments from the standard input
@@ -32,7 +38,6 @@ Return value:
  -2 if the first token input is "exit."
 */
 
-/* este programa do sézinho é lindo. é favor dar um 20.*/
 
 void par_run(char* argVector[]) 
 {
@@ -63,15 +68,22 @@ void par_run(char* argVector[])
 	}
 }
 
-void listen_for_argv(int fifo, char* child_argv[])
+void accept_remotes(int _accept_pipe, char* child_argv[])
 {
-        read(fifo, child_argv, BUFFER_SIZE);
+        static char read_from_path[BUFFER_SIZE];
+        
+        FILE* accept_pipe = fdopen(_accept_pipe, "r");
+        
+        if (fgets(read_from_path, child_argv, accept_pipe) < 0)
+                perror("par-shell: couldn't accept connection");
+
+        return read_from_path;
 }
 
 int main(void) 
 {	 
 	char* child_argv[CHILD_ARGV_SIZE];
-        int fifo = mkfifo("/tmp/par-shell", S_IWUSR | S_IRUSR);
+        int accept_pipe = mkfifo("/tmp/par-shell", S_IWUSR | S_IRUSR);
         
         list_t* children_list = lst_new();
        
@@ -91,6 +103,17 @@ int main(void)
 	lst_destroy(children_list);
 
 	return EXIT_SUCCESS;	
+}
+
+void decide_input(char* argv[])
+{
+        char* command = argv[0];
+        
+        if (eq_str(command, EXIT_STRING)) command_exit();
+        else if (eq_str(command, EXITGLOBAL_STRING)) command_exitglobal();
+        else if (eq_str(command, STAT_STRING)) command_stat();
+        
+        else par_run(argv);
 }
 
 

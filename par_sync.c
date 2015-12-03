@@ -6,7 +6,7 @@
 #include "list.h"
 #include "par_wait.h"
 
-#define EMSG_THREADCREATE "par-shell: Couldn't create monitoring thread. Will not be able to monitor and wait for children. Aborting."
+#define EMSG_THREADCREATE "par-shell: Couldn't create waiting thread. Aborting."
 
 static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t exit_called_mutex = PTHREAD_MUTEX_INITIALIZER;

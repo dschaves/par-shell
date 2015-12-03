@@ -9,4 +9,4 @@ test*
 *.gz
 *.zip
 *.tar
-*.txt
+log.txt
