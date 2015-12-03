@@ -22,7 +22,7 @@ main.o: main.c par_sync.h list.h
 	$(CC) $(CFLAGS) -c -o main.o main.c
 
 par_sync.o: par_sync.c par_wait.h par_sync.h list.h
-	$(CC) $(CFLAGS) -c -o par_sync.c
+	$(CC) $(CFLAGS) -c -o par_sync.o par_sync.c
 
 par_wait.o: par_wait.c par_wait.h par_sync.h
 	$(CC) $(CFLAGS) -c -o par_wait.o par_wait.c
