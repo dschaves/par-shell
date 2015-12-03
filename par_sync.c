@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "list.h"
 #include "par_wait.h"
@@ -11,16 +12,10 @@
 static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t exit_called_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t children_counters_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-static pthread_cond_t can_fork = PTHREAD_COND_INITIALIZER;
-static pthread_cond_t can_wait = PTHREAD_COND_INITIALIZER;
-
-static unsigned int forked_children = 0; // counts all children successfully forked
-static unsigned int waited_children = 0; // counts all children succesffully waited on
+static sem_t can_fork;
+static sem_t can_wait;
 static const unsigned int MAXPAR = 8; 
-
 static bool _exit_called = false;
-
 static list_t* children_list;
 static pthread_t par_wait_thread;
 
@@ -79,37 +74,29 @@ time_t get_finish_time(int pid)
 
 pid_t synced_wait(int* status) 
 {
-	pthread_mutex_lock(&children_counters_mutex);
-
-	while (NO_WAIT_SLOT) {
-	        if (exit_called()) return -2;
-		pthread_cond_wait(&can_wait, &children_counters_mutex);
-	}
-	pthread_mutex_unlock(&children_counters_mutex);
-
-	return wait(status); // XXX: waits for next child to terminate
+        sem_wait(&can_wait);
+        pid_t pid = wait(status);
+        sem_post(&can_fork);
+        return pid;
 }
 
 pid_t synced_fork(void)
 {
-	pthread_mutex_lock(&children_counters_mutex);
-				
-	while (NO_FORK_SLOT) 
-		pthread_cond_wait(&can_fork, &children_counters_mutex);
-		
-	pthread_mutex_unlock(&children_counters_mutex);	
-
-	return fork();
+        sem_wait(&can_fork);
+        pid_t pid = fork();
+        sem_post(&can_wait);
+        return pid;
 }
 
 void threading_init(list_t* _children_list)
 { 
         children_list = _children_list; 
-        // pthread_create returns non-zero if it fails.
+        sem_init(&can_wait, 0, 0);
+        sem_init(&can_fork, 0, MAXPAR);
         if (pthread_create(&par_wait_thread, NULL, par_wait, NULL)) {
        	        perror(EMSG_THREADCREATE);
        	        exit(1);
-       	} // multi-threading starts here
+       	} // multi-threading starts here ONLY
 }
 
 void threading_cleanup(void)
@@ -119,8 +106,7 @@ void threading_cleanup(void)
 	        perror("par-shell: couldn't join with monitor thread");
 		
 	pthread_mutex_destroy(&list_mutex);
-	pthread_mutex_destroy(&children_counters_mutex);
 	pthread_mutex_destroy(&exit_called_mutex);
-	pthread_cond_destroy(&can_fork);
-	pthread_cond_destroy(&can_wait);
+	sem_destroy(&can_fork);
+	sem_destroy(&can_wait);
 }
