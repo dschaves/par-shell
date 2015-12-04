@@ -8,7 +8,6 @@
 #include "par_wait.h"
 
 #define EMSG_THREADCREATE "par-shell: Couldn't create waiting thread. Aborting."
-#define EMSG_INPUT "\npar-shell: couldn't read input"
 
 static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 static sem_t can_fork;

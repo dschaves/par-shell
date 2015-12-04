@@ -1,9 +1,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+
 
 #define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
@@ -12,16 +14,15 @@
 #define MSG_IN "\nPath for par-shell-in pipe (existing): "
 #define MSG_OUT "\nPath for par-shell-out pipe (will be created): "
 
+
 void input_error()
 {
-        free(input); 
         perror(EMSG_INPUT);
         exit(EXIT_FAILURE); 
 }
 
 void pipe_error()
 {
-        free(input); 
         perror(EMSG_PIPE);
         exit(EXIT_FAILURE); 
 }
@@ -34,40 +35,19 @@ void get_stats(FILE* par_shell_out, FILE* par_shell_in, char buffer[], size_t bu
         printf("\nTotal time: %s", buffer);
 }
 
-/* Buffer should be a malloc string! */
-int regist_self(int par_shell_in, char par_shell_out_path[], char buffer[], size_t buffer_size)
+int regist_self(char* par_shell_in, char* par_shell_out)
 {
-
-        if (par_shell_out < 0) pipe_error();
+        FILE* psin = fopen(par_shell_in, "w");        
+        if (!psin) pipe_error();
         
-        sprintf(buffer, "%d %s", getpid(), par_shell_out_path);
-        
-        if (write(par_shell_in, buffer, strlen(buffer)+1) < 0)
-                pipe_error();
+        sprintf(psin, "%d %s", getpid(), par_shell_out);
         
         return par_shell_out;
 }       
 
-FILE* get_par_shell_in(char path[], size_t size)
+int make_par_shell_out(char** buffer, size_t* size)
 {
-        printf(MSG_IN);
-        
-        if (getline(&path, &size, stdin) < 0) input_error();
-        
-        strtok(path, "\n"); // strip newline so this is a proper directory
-
-        FILE* par_shell_in = fopen(input, "r");
-        
-        if (!par_shell_in) pipe_error();
-        
-        return par_shell_in;
-}
-
-int get_par_shell_out(char path[], size_t size )
-{
-        printf(MSG_OUT);
-        
-        if (getline(&path, &size, stdin) < 0) input_error();
+        if (getline(buffer, size, stdin) < 0) input_error();
         
         strtok(path, "\n"); //strip newline
         
@@ -83,8 +63,15 @@ int main()
         char* input = NULL; // for getline
         size_t size = 0; // for getline
         size_t input_len; 
-        FILE* par_shell_in = get_par_shell_in(input);
-        FILE* par_shell_out = get_par_shell_out(output);
+        
+        printf(MSG_IN);
+        if (getline(&input, &size, stdin) < 0) input_error();
+        char* par_shell_in = strdup(input);
+        
+        printf(MSG_OUT);
+        int par_shell_out = make_par_shell_out(input, &size);
+        
+        regist_self(par_shell_in);
         
 	for(;;) {
 	
