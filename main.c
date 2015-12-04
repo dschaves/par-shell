@@ -4,12 +4,14 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/queue.h>
+#include <signal.h>
 
 #include "list.h"
 #include "par_sync.h"
+#include "remotes.h"
 
 #define MSG_PROMPT "Par-shell now ready. Does not wait for jobs to exit!"
+#define EMSG_INPUT "\npar-shell: couldn't read input"
 
 #define BUFFER_SIZE 128
 #define CHILD_ARGV_SIZE 7
@@ -18,6 +20,8 @@
 #define EXITGLOBAL_RETURN -3
 #define EXITGLOBAL_STRING "exit-global"
 #define eq_str(str1,str2) (!strcmp(str1,str2)) 
+
+static list_t* children_list;
 
 /* get_child_argv:
 Reads all whitespace-separated tokens from the string "command_line"
@@ -36,8 +40,7 @@ Arguments:
 Return value:
 The number of arguments that were read; -1 if any argument evals to false,
 because we can't do anything like that.*/
-
-int get_child_argv(char* argv[], size_t argv_size, FILE* par_shell_in)
+int get_child_argv(char* argv[], size_t argv_size, int par_shell_in)
 {
         char* token;			    // each read token from input. 
         const char delimiters[] =" \t\n";   // strtok-ending characters
@@ -45,7 +48,9 @@ int get_child_argv(char* argv[], size_t argv_size, FILE* par_shell_in)
         char* command_line = NULL;
         size_t command_size = 0;
         
-        getline(&command_line, &command_size, par_shell_in);
+        FILE* psin = fdopen(par_shell_in, "r");
+        getline(&command_line, &command_size, psin);
+        fclose(psin);
         
         if (!command_line || !argv || !argv_size) return -1;
      
@@ -89,46 +94,9 @@ void par_run(char* argVector[])
 	if (pid > 0) perror("par-shell: unable to fork");
 	
 	else regist_fork(pid, time(NULL));
-	
 }
 
-int main() 
-{	 
-	/* TODO: pipes should be in current working dir. 
-	   Use: get_current_dir_name(). But you have to make buffers etc.*/
-	char* argv[CHILD_ARGV_SIZE];
-
-        FILE* par_shell_in = fdopen(mkfifo("/tmp/par-shell-in", 
-        O_CREAT | O_RDONLY, S_IRUSR | S_IWUSR), "r"));
-        
-        signal(SIGINT, exitglobal);
-        list_t* children_list = lst_new();
-        threading_init(children_list); /** NOTE: initiates multi-threading. */
-	
-	/* Main loop. The program's main logic is dictated next. */
-        for(;;) {
-        
-                switch (get_child_argv(argv, CHILD_ARGV_SIZE)) {
-                        
-                        case -1: perror(EMSG_INPUT)
-                        case 0: continue;
-                        
-                        default:
-                                if (strtol(argv[0], NULL, 10)) 
-                                        stats(argv);
-                                        
-                                else if (eq_str(argv[0], EXITGLOBAL_STRING)) 
-                                        exitglobal();
-                                        
-                                else if (eq_str(argv[0], STATS_STRING)) 
-                                        acknowledge(argv);
-                                else 
-                                        par_run(argv);
-                }
-        }
-}
-
-void exitglobal(list_t* children_list)
+void exitglobal(int signo)
 {       
         terminate_remotes();
         threading_cleanup();
@@ -137,10 +105,39 @@ void exitglobal(list_t* children_list)
 	exit(EXIT_SUCCESS);
 }
 
-void stats(FILE* par_shell_in)
-{
-        fprintf(par_shell_in,"%d\n%d", iteration_count(), total_time());
+int main() 
+{	 
+	/* TODO: pipes should be in current working dir. 
+	   Use: get_current_dir_name(). But you have to make buffers etc.*/
+	char* argv[CHILD_ARGV_SIZE];
+
+        int par_shell_in = mkfifo("/tmp/par-shell-in", S_IRUSR | S_IWUSR);
+        
+        signal(SIGINT, exitglobal);
+        list_t* children_list = lst_new();
+        threading_init(children_list); /** NOTE: initiates multi-threading. */
+	
+	/* Main loop. The program's main logic is dictated next. */
+        for(;;) {
+        
+                switch (get_child_argv(argv, CHILD_ARGV_SIZE, par_shell_in)) {
+                        
+                        case -1: perror(EMSG_INPUT);
+                        case 0: continue;
+                        
+                        default:
+                                if (strtol(argv[0], NULL, 10)) 
+                                        acknowledge_remote(argv);
+                                        
+                                else if (eq_str(argv[0], EXITGLOBAL_STRING)) 
+                                        exitglobal(0);
+                                        
+                                else 
+                                        par_run(argv);
+                }
+        }
 }
+
 
 
 

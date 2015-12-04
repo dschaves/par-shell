@@ -9,8 +9,8 @@ static time_t total_time;
 #define BUFFER_SIZE 128
 
 // getters a la Java for the above static variables.
-unsigned int iteration_count() {return iteration_count;}
-time_t total_time() {return total_time;}
+unsigned int get_iteration_count() {return iteration_count;}
+time_t get_total_time() {return total_time;}
 
 static void read_log_file(FILE* log_file)
 {	

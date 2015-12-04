@@ -8,6 +8,7 @@
 #include "par_wait.h"
 
 #define EMSG_THREADCREATE "par-shell: Couldn't create waiting thread. Aborting."
+#define EMSG_INPUT "\npar-shell: couldn't read input"
 
 static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 static sem_t can_fork;
@@ -73,17 +74,16 @@ void threading_cleanup(void)
         if (pthread_join(par_wait_thread, NULL))
 	        perror("par-shell: couldn't join with monitor thread");
 	
+	int done;
+	sem_getvalue(&can_wait, &done);
+        while (!done) { 
+                sem_wait(&can_wait);
+                sem_getvalue(&can_wait, &done);
+        }
+                
+        pthread_kill(SIGTERM, par_wait_thread);
+        
 	pthread_mutex_destroy(&list_mutex);
-	pthread_mutex_destroy(&exit_called_mutex);
 	sem_destroy(&can_fork);
 	sem_destroy(&can_wait);
-}
-
-void terminate_terminals_threads(struct remote_terminals)
-{
-        /*Wait for all children to be waited on. Then SIGTERM waiting thread.*/
-        while (sem_getvalue(&can_wait)) sem_wait(&can_wait);
-        pthread_kill(SIGTERM, par_wait_thread);
-        /* SIGTERM all remote terminals. */        
-
 }

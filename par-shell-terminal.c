@@ -9,6 +9,8 @@
 #define CHILD_ARGV_SIZE 7
 #define EMSG_INPUT "\npar-shell: couldn't read input"
 #define EMSG_PIPE "\npar-shell: couldn't open pipe"
+#define MSG_IN "\nPath for par-shell-in pipe (existing): "
+#define MSG_OUT "\nPath for par-shell-out pipe (will be created): "
 
 void input_error()
 {
@@ -24,7 +26,7 @@ void pipe_error()
         exit(EXIT_FAILURE); 
 }
 
-void print_stats(int par_shell_out, char buffer[], size_t buffer_size )
+void get_stats(FILE* par_shell_out, FILE* par_shell_in, char buffer[], size_t buffer_size)
 {   
         getline(&buffer, &buffer_size, fdopen(par_shell_out, "r")); // get number of iters
         printf("\nIterations: %s", buffer);
@@ -35,9 +37,7 @@ void print_stats(int par_shell_out, char buffer[], size_t buffer_size )
 /* Buffer should be a malloc string! */
 int regist_self(int par_shell_in, char par_shell_out_path[], char buffer[], size_t buffer_size)
 {
-        int par_shell_out = mkfifo(par_shell_out_path, 
-        O_RDONLY | O_CREAT, S_IRUSR | S_IWUSR);
-        
+
         if (par_shell_out < 0) pipe_error();
         
         sprintf(buffer, "%d %s", getpid(), par_shell_out_path);
@@ -48,26 +48,44 @@ int regist_self(int par_shell_in, char par_shell_out_path[], char buffer[], size
         return par_shell_out;
 }       
 
+FILE* get_par_shell_in(char path[], size_t size)
+{
+        printf(MSG_IN);
+        
+        if (getline(&path, &size, stdin) < 0) input_error();
+        
+        strtok(path, "\n"); // strip newline so this is a proper directory
+
+        FILE* par_shell_in = fopen(input, "r");
+        
+        if (!par_shell_in) pipe_error();
+        
+        return par_shell_in;
+}
+
+int get_par_shell_out(char path[], size_t size )
+{
+        printf(MSG_OUT);
+        
+        if (getline(&path, &size, stdin) < 0) input_error();
+        
+        strtok(path, "\n"); //strip newline
+        
+        int fd = mkfifo(path, S_IRUSR | S_IWUSR);
+        
+        if (fd < 0) pipe_error();
+        
+        return fd;
+}
+
 int main()
 {
         char* input = NULL; // for getline
         size_t size = 0; // for getline
         size_t input_len; 
-        int par_shell_in;
-        int par_shell_out;
-
-        printf("\nPath for par-shell-in pipe (existing): ");
-        if (getline(&input, &size, stdin) < 0) input_error();
-        strtok(input, "\n"); // strip newline so this is a proper directory
-        par_shell_in = open(input, O_WRONLY);
-        if (par_shell_in < 0) pipe_error();
+        FILE* par_shell_in = get_par_shell_in(input);
+        FILE* par_shell_out = get_par_shell_out(output);
         
-        printf("\nPath for par-shell-out pipe (will be created): ");
-        if (getline(&input, &size, stdin) < 0) input_error();
-        strtok(input, "\n"); //strip newline
-        par_shell_out = fopen(input, "r");
-        if (!par_shell_out) goto pipe_error;
-
 	for(;;) {
 	
                 printf("\n>>> ");
@@ -79,10 +97,12 @@ int main()
                 
                         if (strncmp("exit", input, 4)) break;
                         
-                        write(par_shell_in, input, input_len+1); // XXX
+                        fputs(input, par_shell_in); // XXX
                         
                         if (strncmp("stats", input, 5)) 
-                                print_stats(par_shell_out);
+                                get_stats(par_shell_out, par_shell_in, line, size);
                 }
         }
+        
+        return EXIT_SUCCESS;
 }
