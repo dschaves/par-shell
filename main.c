@@ -19,6 +19,15 @@
 #define EXITGLOBAL_STRING "exit-global"
 #define eq_str(str1,str2) (!strcmp(str1,str2)) 
 
+static struct remote* remote_first = NULL;
+
+struct remote {
+
+        pid_t pid;
+        int par_shell_out;
+        struct remote* next;
+};
+
 /* get_child_argv:
 Reads all whitespace-separated tokens from the string "command_line"
 and saves them in the entries of the 'argv' argument.
@@ -36,6 +45,7 @@ Arguments:
 Return value:
 The number of arguments that were read; -1 if any argument evals to false,
 because we can't do anything like that.*/
+
 int get_child_argv(char command_line[], char* argv[], size_t argv_size)
 {
         char* token;			    // each read token from input. 
@@ -48,7 +58,7 @@ int get_child_argv(char command_line[], char* argv[], size_t argv_size)
 
         /* Preencher o vector argv com todos os tokens encontrados
          * ate ultrapassar o tamanho do vector ou chegar a um NULL. */
-        for (argc = 0; argc < argv_size && token != NULL; argc++) {
+        for (argc = 0; argc < argv_size-1 && token != NULL; argc++) {
         
                 argv[argc] = token;
                 token = strtok(NULL, delimiters);
@@ -63,30 +73,28 @@ int get_child_argv(char command_line[], char* argv[], size_t argv_size)
 void par_run(char* argVector[]) 
 {
 	pid_t pid = synced_fork();
-
-	char filename[BUFFER_SIZE];
 	
-        switch (pid) {
-                
-                /* Is forked child: */  
-                case 0: sprintf(filename, "par-shell-out-%d.txt", getpid());
-			int output_file = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
-			dup2(output_file, STDOUT_FILENO);
-			close(output_file);
+	if (!pid) { // Is forked child.
 
-                        execv(argVector[0], argVector);
-
-		        if (argVector[0][0] != '/') 
-			execvp(argVector[0], argVector);
-
-		        // next line only reached if execv fails.
-		        perror("par-shell: exec failed");
-		        _exit(EXIT_FAILURE); // better way of exiting.
-		        
-		/* Is parent (par-shell, main): */
-                case -1: perror("par-shell: unable to fork"); break;
-		default: regist_fork(pid, time(NULL));
+	        char filename[BUFFER_SIZE];
+                /* First we redirect the child's output into a file. */
+                sprintf(filename, "par-shell-out-%d.txt", getpid());
+	        int output_file = open(filename, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+	        dup2(output_file, STDOUT_FILENO);
+	        close(output_file);
+                /* Then we exec the child. */
+                execv(argVector[0], argVector);
+                if (argVector[0][0] != '/') 
+	                execvp(argVector[0], argVector);
+                /* Next line only reached if execv fails. */
+                perror("par-shell: exec failed");
+                exit(EXIT_FAILURE); // better way of exiting.       
 	}
+	
+	if (pid > 0) perror("par-shell: unable to fork");
+	
+	else regist_fork(pid, time(NULL));
+	
 }
 
 int main() 
@@ -94,28 +102,82 @@ int main()
 	/* TODO: pipes should be in current working dir. 
 	   Use: get_current_dir_name(). But you have to make buffers etc.*/
 	char* argv[CHILD_ARGV_SIZE];
-	char command_line[BUFFER_SIZE];
-        int par_shell_in = mkfifo("/tmp/par-shell-in", S_IRUSR);
-        int par_shell_out = mkfifo("/tmp/par-shell-out", S_IWUSR);
-
+	char* command_line = NULL;
+	size_t command_size = 0;
+        int par_shell_in = mkfifo("/tmp/par-shell-in", O_CREAT S_IRUSR);
+        
         signal(SIGINT, exitglobal);
- 
         list_t* children_list = lst_new();
-       
         threading_init(children_list); /** NOTE: initiates multi-threading. */
 	
-	/** MAINLOOP:
-	  * The program's main logic is dictated next. */
+	/* Main loop. The program's main logic is dictated next. */
         for(;;) {
                 
-                if (eq_str(argv[0], EXITGLOBAL_STRING)) exitglobal();
-                else if (eq_str(argv[0], STATS_STRING)) stats(par_shell_out);
-                else par_run(argv);        
+                if (strtol(argv[0], NULL, 10)) stats(argv);
+                else if (eq_str(argv[0], EXITGLOBAL_STRING)) exitglobal();
+                else if (eq_str(argv[0], STATS_STRING)) acknowledge(par_shell_out);
+                else par_run(argv);
         }
-	
+}
+
+void acknowledge(char* argv[])
+{
+        (pid_t) pid = strtol(argv[0], NULL, 10);
+        char* par_shell_out_path = argv[1];
+        
+        if (known_remote(pid)) stats(pid);
+        
+        else {
+                struct remote* new = new_remote(pid, par_shell_out_path);
+                insert_remote(new);
+        }
+}
+
+struct remote* new_remote(pid_t pid, char* par_shell_out_path)
+{
+        struct remote_shell new = malloc(sizeof(struct remote_shell));
+        new->pid = pid;
+        new->par_shell_out = open(par_shell_out,)
+        if (new->par_shell_out > 0) perror("couldn't open par-shell-out"), exit(1);
+
+        return new_sh;
+}
+
+void insert_remote(struct remote* remote)
+{
+        remote->next = remote_first;
+        remote_first = remote;
+}
+
+bool known_remote(pid_t target)
+{
+        struct remote* next;
+        struct remote* this = remote_first;
+       
+        while (this) {
+                next = this->next; 
+                if (this->pid == target) return true;
+                this = next;
+        } return false;
+}
+
+void exitglobal(list_t* children_list)
+{
+        struct remote* next;
+        struct remote* this = remote_first;
+        
+        while (this) {
+                next = this->next; 
+                kill(SIGTERM, this->pid);
+                free(this);
+                this = next;
+        }
+        
         threading_cleanup();
         lst_print(children_list);
 	lst_destroy(children_list);
-
-	return EXIT_SUCCESS;	
+	exit(EXIT_SUCCESS);
 }
+
+
+

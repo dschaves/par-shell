@@ -8,6 +8,10 @@ static unsigned int iteration_count;
 static time_t total_time;
 #define BUFFER_SIZE 128
 
+// getters a la Java for the above static variables.
+unsigned int iteration_count() {return iteration_count;}
+time_t total_time() {return total_time;}
+
 static void read_log_file(FILE* log_file)
 {	
         printf("Reading log.txt: ");
@@ -41,7 +45,6 @@ static void read_log_file(FILE* log_file)
 }
 
 
-
 static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
 {       
 	total_time += finish_time; 
@@ -49,7 +52,6 @@ static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
         ++iteration_count;
 	fflush(log_file);
 }
-
 
 
 void* par_wait(void*_)
