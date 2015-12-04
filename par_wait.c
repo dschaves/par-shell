@@ -64,24 +64,22 @@ void* par_wait(void*_)
 	else 
 	        read_log_file(log_file);
 	
-	while (pid != -2) {  
+	for(;;) {
 
 		pid = synced_wait(NULL);
 		
-		if ((endtime = time(NULL)) == -1)
+		if ((endtime = time(NULL)) < 0)
 		        perror("par-shell: couldn't get finish time for child");
 		
-                if (pid == 1) {
+                if (pid == -1) 
                         perror("par-shell: couldn't wait on child");
                         
-                } else if (pid != -2) {
-                        printf("== PID %u FINISHED ==\n", pid);
+                else {
                         regist_wait(pid, endtime); 
 			save_log_file(log_file, pid, get_finish_time(pid));
                 }
 	}
 	
-	fclose(log_file);
-	 
+	fclose(log_file);	 
 	return NULL; 		
 }
