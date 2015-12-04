@@ -27,22 +27,22 @@ void pipe_error()
         exit(EXIT_FAILURE); 
 }
 
-void get_stats(FILE* par_shell_out, FILE* par_shell_in, char buffer[], size_t buffer_size)
+void get_stats(char* par_shell_in, char* par_shell_out, char** buffer, size_t* buffer_size)
 {   
-        getline(&buffer, &buffer_size, fdopen(par_shell_out, "r")); // get number of iters
+        regist_self(par_shell_in, par_shell_out);
+        FILE* psout = fopen(par_shell_out, "r");
+        getline(buffer, buffer_size, psout); // get number of iters
         printf("\nIterations: %s", buffer);
-        getline(&buffer, &buffer_size, fdopen(par_shell_out, "r"));
+        getline(buffer, buffer_size, psout);
         printf("\nTotal time: %s", buffer);
 }
 
-int regist_self(char* par_shell_in, char* par_shell_out)
+void regist_self(char* par_shell_in, char* par_shell_out)
 {
         FILE* psin = fopen(par_shell_in, "w");        
         if (!psin) pipe_error();
-        
-        sprintf(psin, "%d %s", getpid(), par_shell_out);
-        
-        return par_shell_out;
+        fprintf(psin, "%d %s", getpid(), par_shell_out);
+        fclose(psin);
 }       
 
 int make_par_shell_out(char** buffer, size_t* size)
@@ -66,12 +66,15 @@ int main()
         
         printf(MSG_IN);
         if (getline(&input, &size, stdin) < 0) input_error();
-        char* par_shell_in = strdup(input);
+        strtok(path, "\n"); //strip newline
+        char* par_shell_in_path = strdup(input);
         
         printf(MSG_OUT);
-        int par_shell_out = make_par_shell_out(input, &size);
+        if (getline(&input, &size, stdin) < 0) input_error();
+        strtok(path, "\n"); //strip newline
+        char* par_shell_out_path = strdup(input);
         
-        regist_self(par_shell_in);
+        regist_self(par_shell_in_path, par_shell_out_path);
         
 	for(;;) {
 	

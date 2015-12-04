@@ -7,13 +7,13 @@ CFLAGS=-pthread -Wall -Werror -g
 # Werror: Warnings become errors.
 # g: enable debugging symbols
 
-all: par-shell par-shell-in
+all: par-shell par-shell-terminal
 
-par-shell-in: par-shell-in.o par_sync.o
-	$(CC) $(CFLAGS) -o par-shell-in par-shell-in.o par_sync.o
+par-shell-terminal: par-shell-terminal.o par_sync.o
+	$(CC) $(CFLAGS) -o par-shell-terminal par-shell-terminal.o par_sync.o
 
-par-shell-in.o: par-shell-in.c 
-	$(CC) $(CFLAGS) -c -o par-shell-in.o par-shell-in.c
+par-shell-terminal.o: par-shell-terminal.c 
+	$(CC) $(CFLAGS) -c -o par-shell-terminal.o par-shell-terminal.c
 
 par-shell: list.o remotes.o par_sync.o par_wait.o main.o 
 	$(CC) $(CFLAGS) -o par-shell list.o remotes.o par_sync.o par_wait.o main.o
