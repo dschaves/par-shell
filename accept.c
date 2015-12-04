@@ -19,8 +19,6 @@ void accept_connections(char* accept_fifo_fp)
                         
                 FILE* output_pipe = fopen(output_pipe_path);
                 FILE* input_pipe = fdopen(mkfifo())
-        
-
         }
         
 }

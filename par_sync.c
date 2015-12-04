@@ -84,7 +84,6 @@ void terminate_terminals_threads(struct remote_terminals)
         /*Wait for all children to be waited on. Then SIGTERM waiting thread.*/
         while (sem_getvalue(&can_wait)) sem_wait(&can_wait);
         pthread_kill(SIGTERM, par_wait_thread);
-        
         /* SIGTERM all remote terminals. */        
 
 }

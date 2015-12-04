@@ -56,13 +56,13 @@ int main()
         int par_shell_in;
         int par_shell_out;
 
-        printf("\nPath for par-shell-in: ");
+        printf("\nPath for par-shell-in pipe (existing): ");
         if (getline(&input, &size, stdin) < 0) input_error();
         strtok(input, "\n"); // strip newline so this is a proper directory
         par_shell_in = open(input, O_WRONLY);
         if (par_shell_in < 0) pipe_error();
         
-        printf("\nPath for par-shell-out: ");
+        printf("\nPath for par-shell-out pipe (will be created): ");
         if (getline(&input, &size, stdin) < 0) input_error();
         strtok(input, "\n"); //strip newline
         par_shell_out = fopen(input, "r");
