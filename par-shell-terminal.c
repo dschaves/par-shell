@@ -27,36 +27,30 @@ void pipe_error()
         exit(EXIT_FAILURE); 
 }
 
-void get_stats(char* par_shell_in, char* par_shell_out, char** buffer, size_t* buffer_size)
-{   
-        regist_self(par_shell_in, par_shell_out);
-        FILE* psout = fopen(par_shell_out, "r");
-        getline(buffer, buffer_size, psout); // get number of iters
-        printf("\nIterations: %s", buffer);
-        getline(buffer, buffer_size, psout);
-        printf("\nTotal time: %s", buffer);
-}
-
 void regist_self(char* par_shell_in, char* par_shell_out)
 {
         FILE* psin = fopen(par_shell_in, "w");        
         if (!psin) pipe_error();
         fprintf(psin, "%d %s", getpid(), par_shell_out);
         fclose(psin);
-}       
-
-int make_par_shell_out(char** buffer, size_t* size)
-{
-        if (getline(buffer, size, stdin) < 0) input_error();
-        
-        strtok(path, "\n"); //strip newline
-        
-        int fd = mkfifo(path, S_IRUSR | S_IWUSR);
-        
-        if (fd < 0) pipe_error();
-        
-        return fd;
 }
+
+void get_stats(char* par_shell_in, char* par_shell_out, char** buffer, size_t* buffer_size)
+{   
+        regist_self(par_shell_in, par_shell_out);
+        
+        FILE* psout = fopen(par_shell_out, "r");
+        
+        getline(buffer, buffer_size, psout); // get number of iters
+        printf("\nIterations: %s", *buffer);
+        fgetc(psout);
+        
+        getline(buffer, buffer_size, psout);
+        printf("\nTotal time: %s", *buffer);
+        fgetc(psout);
+        
+        fclose(psout);
+}    
 
 int main()
 {
@@ -66,13 +60,15 @@ int main()
         
         printf(MSG_IN);
         if (getline(&input, &size, stdin) < 0) input_error();
-        strtok(path, "\n"); //strip newline
+        strtok(input, "\n"); //strip newline
         char* par_shell_in_path = strdup(input);
         
         printf(MSG_OUT);
         if (getline(&input, &size, stdin) < 0) input_error();
-        strtok(path, "\n"); //strip newline
+        strtok(input, "\n"); //strip newline
         char* par_shell_out_path = strdup(input);
+        
+        if (mkfifo(input, S_IRUSR | S_IWUSR) < 0) pipe_error();
         
         regist_self(par_shell_in_path, par_shell_out_path);
         
@@ -87,10 +83,12 @@ int main()
                 
                         if (strncmp("exit", input, 4)) break;
                         
-                        fputs(input, par_shell_in); // XXX
+                        FILE* psin = fopen(par_shell_in_path, "w");
+                        fputs(input, psin); // XXX
+                        fclose(psin);
                         
                         if (strncmp("stats", input, 5)) 
-                                get_stats(par_shell_out, par_shell_in, line, size);
+                        get_stats(par_shell_in_path, par_shell_out_path, &input, &size);
                 }
         }
         

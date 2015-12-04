@@ -45,8 +45,8 @@ int get_child_argv(char* argv[], size_t argv_size, int par_shell_in)
         char* token;			    // each read token from input. 
         const char delimiters[] =" \t\n";   // strtok-ending characters
         int i, argc;                        // array index; tokens found count
-        char* command_line = NULL;
-        size_t command_size = 0;
+        static char* command_line = NULL;
+        static size_t command_size = 0;
         
         FILE* psin = fdopen(par_shell_in, "r");
         getline(&command_line, &command_size, psin);
@@ -112,6 +112,7 @@ int main()
 	char* argv[CHILD_ARGV_SIZE];
 
         int par_shell_in = mkfifo("/tmp/par-shell-in", S_IRUSR | S_IWUSR);
+        if (par_shell_in > 0) perror ("couldn't create FIFO."), exit(1);
         
         signal(SIGINT, exitglobal);
         list_t* children_list = lst_new();
