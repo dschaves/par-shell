@@ -1,8 +1,5 @@
-# 18/11 : Primeira versão funcional da PAR-SHELL V2!
+# 03/12 : Par-shell v2 em reconstrução extrema.
 
-Seria simpático se analisassem o código.
-Mudei várias coisas e não sei se está a funcionar perfeitamente bem.
-~~Adicionei comentários para facilitar a vossa leitura.~~ Não me apeteceu. Façam vocês durante o vosso estudo do programa! 
-PS: Rafael aprende a fazer pull-requests.
-_
-
+O protocolo para a par-shell enviar e receber mensagens poderá ser a seguinte:
+- par-shell só recebe input por um canal, chamado par-shell-in.
+(etc.)

@@ -7,18 +7,18 @@ CFLAGS=-pthread -Wall -Werror -g
 # Werror: Warnings become errors.
 # g: enable debugging symbols
 
-all: par-shell par-shell-in
+all: par-shell par-shell-terminal
 
-par-shell-in: par-shell-in.o par_sync.o
-	$(CC) $(CFLAGS) -o par-shell-in par-shell-in.o par_sync.o
+par-shell-terminal: par-shell-terminal.o par_sync.o
+	$(CC) $(CFLAGS) -o par-shell-terminal par-shell-terminal.o par_sync.o
 
-par-shell-in.o: par-shell-in.c 
-	$(CC) $(CFLAGS) -c -o par-shell-in.o par-shell-in.c
+par-shell-terminal.o: par-shell-terminal.c 
+	$(CC) $(CFLAGS) -c -o par-shell-terminal.o par-shell-terminal.c
 
-par-shell: list.o par_sync.o par_wait.o main.o 
-	$(CC) $(CFLAGS) -o par-shell list.o par_sync.o par_wait.o main.o
+par-shell: list.o remotes.o par_sync.o par_wait.o main.o 
+	$(CC) $(CFLAGS) -o par-shell list.o remotes.o par_sync.o par_wait.o main.o
 
-main.o: main.c par_sync.h list.h
+main.o: main.c par_sync.h list.h remotes.h
 	$(CC) $(CFLAGS) -c -o main.o main.c
 
 par_sync.o: par_sync.c par_wait.h par_sync.h list.h
@@ -26,6 +26,9 @@ par_sync.o: par_sync.c par_wait.h par_sync.h list.h
 
 par_wait.o: par_wait.c par_wait.h par_sync.h
 	$(CC) $(CFLAGS) -c -o par_wait.o par_wait.c
+
+remotes.o: remotes.c remotes.h par_wait.h
+	$(CC) $(CFLAGS) -c -o remotes.o remotes.c
 
 list.o: list.c list.h
 	$(CC) $(CFLAGS) -c list.c

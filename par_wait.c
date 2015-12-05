@@ -8,6 +8,10 @@ static unsigned int iteration_count;
 static time_t total_time;
 #define BUFFER_SIZE 128
 
+// getters a la Java for the above static variables.
+unsigned int get_iteration_count() {return iteration_count;}
+time_t get_total_time() {return total_time;}
+
 static void read_log_file(FILE* log_file)
 {	
         printf("Reading log.txt: ");
@@ -41,7 +45,6 @@ static void read_log_file(FILE* log_file)
 }
 
 
-
 static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
 {       
 	total_time += finish_time; 
@@ -49,7 +52,6 @@ static void save_log_file(FILE* log_file, pid_t pid, time_t finish_time)
         ++iteration_count;
 	fflush(log_file);
 }
-
 
 
 void* par_wait(void*_)
@@ -64,24 +66,22 @@ void* par_wait(void*_)
 	else 
 	        read_log_file(log_file);
 	
-	while (pid != -2) {  
+	for(;;) {
 
 		pid = synced_wait(NULL);
 		
-		if ((endtime = time(NULL)) == -1)
+		if ((endtime = time(NULL)) < 0)
 		        perror("par-shell: couldn't get finish time for child");
 		
-                if (pid == 1) {
+                if (pid == -1) 
                         perror("par-shell: couldn't wait on child");
                         
-                } else if (pid != -2) {
-                        printf("== PID %u FINISHED ==\n", pid);
+                else {
                         regist_wait(pid, endtime); 
 			save_log_file(log_file, pid, get_finish_time(pid));
                 }
 	}
 	
-	fclose(log_file);
-	 
+	fclose(log_file);	 
 	return NULL; 		
 }
